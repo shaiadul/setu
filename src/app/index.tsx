@@ -1,31 +1,59 @@
-import React, { useState } from 'react';
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { useState } from "react";
 import {
   Alert,
   FlatList,
   Linking,
   Platform,
   RefreshControl,
+  ScrollView,
+  Share,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { CampusHeader } from '@/components/campus-header';
-import { JuBadge } from '@/components/ju-badge';
-import { useBlood } from '@/context/blood-context';
-import { useTheme } from '@/hooks/use-theme';
-import { BloodRequest, JuRole } from '@/types/blood';
+import { CampusHeader } from "@/components/campus-header";
+import { JuBadge } from "@/components/ju-badge";
+import { RequestTrackingModal } from "@/components/request-tracking-modal";
+import { useBlood } from "@/context/blood-context";
+import { BloodGroup, BloodRequest, JuRole } from "@/types/blood";
+
+const BLOOD_GROUPS: BloodGroup[] = [
+  "O-",
+  "O+",
+  "A-",
+  "A+",
+  "B-",
+  "B+",
+  "AB-",
+  "AB+",
+];
+
+const WEEKLY_IMPACT_DATA = [
+  { day: "শনি", bags: 3, heightPercent: 45, isPeak: false },
+  { day: "রবি", bags: 6, heightPercent: 75, isPeak: false },
+  { day: "সোম", bags: 4, heightPercent: 55, isPeak: false },
+  { day: "মঙ্গল", bags: 8, heightPercent: 100, isPeak: true },
+  { day: "বুধ", bags: 5, heightPercent: 65, isPeak: false },
+  { day: "বৃহঃ", bags: 7, heightPercent: 88, isPeak: false },
+  { day: "আজ", bags: 4, heightPercent: 60, isToday: true },
+];
 
 export default function FeedScreen() {
-  const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const { requests, updateResponseStatus, setSelectedTrackingRequest, refreshAll } = useBlood();
+  const {
+    requests,
+    updateResponseStatus,
+    selectedTrackingRequest,
+    setSelectedTrackingRequest,
+    refreshAll,
+  } = useBlood();
 
-  const [activeFilter, setActiveFilter] = useState<'all' | 'Code Red' | JuRole>('all');
+  const [selectedBlood, setSelectedBlood] = useState<"all" | BloodGroup>("all");
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = async () => {
@@ -34,158 +62,493 @@ export default function FeedScreen() {
     setRefreshing(false);
   };
 
-  const filteredRequests = requests.filter(req => {
-    if (activeFilter === 'Code Red') return req.urgency === 'Code Red';
-    if (activeFilter === 'student' || activeFilter === 'teacher' || activeFilter === 'staff') {
-      return req.requesterRole === activeFilter;
+  const getBloodGroupCount = (bg: BloodGroup) => {
+    return requests.filter((r) => r.bloodType === bg).length;
+  };
+
+  const filteredRequests = requests.filter((req) => {
+    if (selectedBlood !== "all" && req.bloodType !== selectedBlood) {
+      return false;
     }
     return true;
   });
 
   const handleQuickRespond = (req: BloodRequest) => {
-    if (req.userStatus === 'en_route') {
-      updateResponseStatus(req.id, 'none');
+    if (req.userStatus === "en_route") {
+      updateResponseStatus(req.id, "none");
       return;
     }
-    updateResponseStatus(req.id, 'en_route');
-    if (Platform.OS !== 'web') {
+    updateResponseStatus(req.id, "en_route");
+    if (Platform.OS !== "web") {
       Alert.alert(
-        '🚑 রেসপন্স কনফার্ম!',
+        "🚑 রেসপন্স নিশ্চিত!",
         `আপনি ${req.hospital}-এর উদ্দেশ্যে রওনা হয়েছেন জানানো হয়েছে।`,
-        [{ text: 'ঠিক আছে' }]
+        [{ text: "ঠিক আছে" }],
       );
     }
   };
 
   const handleCall = (phone: string) => {
     Linking.openURL(`tel:${phone}`).catch(() => {
-      Alert.alert('কল ব্যর্থ', `ফোন নম্বর: ${phone}`);
+      Alert.alert("কল ব্যর্থ", `ফোন নম্বর: ${phone}`);
     });
   };
 
-  const bottomPadding = 56 + Math.max(insets.bottom, 12);
-  const codeRedTotal = requests.filter(r => r.urgency === 'Code Red').length;
-
-  const urgencyColor = (u: string) => {
-    if (u === 'Code Red') return { bg: '#FEF2F2', text: '#DC2626', dot: '#DC2626' };
-    if (u === 'Urgent') return { bg: '#FFFBEB', text: '#D97706', dot: '#F59E0B' };
-    return { bg: '#F0F9FF', text: '#0284C7', dot: '#0EA5E9' };
+  const handleShare = async (item: BloodRequest) => {
+    const text = `🚨 [সেতু - জাহাঙ্গীরনগর বিশ্ববিদ্যালয় রক্তদান হাব]\nজরুরি রক্তের অনুরোধ!\nগ্রুপ: ${item.bloodType} (${item.requiredUnits} ব্যাগ)\nরোগী: ${item.patientName}\nহাসপাতাল: ${item.hospital} (${item.distance})\nযোগাযোগ: ${item.contactNumber}\nঅনুরোধকারী: ${item.requesterDepartment}\n\nদয়া করে রক্তদানে এগিয়ে আসুন অথবা শেয়ার করুন।`;
+    try {
+      if (Platform.OS === "web") {
+        if (navigator.clipboard) {
+          await navigator.clipboard.writeText(text);
+          Alert.alert("কপি হয়েছে", "রক্তের অনুরোধ ক্লিপবোর্ডে কপি করা হয়েছে।");
+        }
+      } else {
+        await Share.share({ message: text });
+      }
+    } catch {
+      // Ignored
+    }
   };
 
+  const bottomPadding = 56 + Math.max(insets.bottom, 12);
+
+  const urgencyColor = (u: string) => {
+    if (u === "Code Red") {
+      return {
+        bg: "#FEF2F2",
+        text: "#DC2626",
+        dot: "#DC2626",
+        border: "#FECACA",
+      };
+    }
+    if (u === "Urgent") {
+      return {
+        bg: "#FFFBEB",
+        text: "#D97706",
+        dot: "#F59E0B",
+        border: "#FDE68A",
+      };
+    }
+    return {
+      bg: "#F0F9FF",
+      text: "#0284C7",
+      dot: "#0EA5E9",
+      border: "#BAE6FD",
+    };
+  };
+
+  const renderHeader = () => (
+    <View style={styles.headerBlock}>
+      {/* Inspiring Campus Blood Impact & Weekly Graph Hero Card */}
+      <View style={styles.impactCard}>
+        {/* Header with Quote & Life Count */}
+        <View style={styles.impactTopRow}>
+          <View style={styles.impactTitleCol}>
+            <View style={styles.impactLiveBadge}>
+              <View style={styles.impactDot} />
+              <Text style={styles.impactLiveText}>
+                ক্যাম্পাস রক্তদান প্রভাব
+              </Text>
+            </View>
+            <Text style={styles.impactQuoteText}>
+              “আপনার এক ব্যাগ রক্ত, মুমূর্ষু মুখে হাসি”
+            </Text>
+          </View>
+
+          <TouchableOpacity
+            style={styles.heroActionBtn}
+            activeOpacity={0.8}
+            onPress={() => router.push("/drives")}
+          >
+            <Ionicons name="calendar-outline" size={13} color="#DC2626" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Weekly Donation Bar Graph */}
+        <View style={styles.graphContainer}>
+          <View style={styles.graphHeader}>
+            <Text style={styles.graphSubtitle}>
+              এই সপ্তাহে <Text style={styles.graphHighlight}>৩৭ ব্যাগ</Text> •
+              ৯৮ জন উপকৃত
+            </Text>
+            <View style={styles.peakIndicator}>
+              <Ionicons name="trending-up" size={12} color="#16A34A" />
+              <Text style={styles.peakText}>+২৪%</Text>
+            </View>
+          </View>
+
+          {/* Bars */}
+          <View style={styles.barsRow}>
+            {WEEKLY_IMPACT_DATA.map((item, index) => {
+              const isActiveToday = item.isToday;
+              return (
+                <View key={index} style={styles.barCol}>
+                  <Text
+                    style={[
+                      styles.barBagsLabel,
+                      isActiveToday && styles.barBagsLabelActive,
+                    ]}
+                  >
+                    {item.bags}
+                  </Text>
+                  <View style={styles.barTrack}>
+                    <View
+                      style={[
+                        styles.barFill,
+                        { height: `${item.heightPercent}%` },
+                        isActiveToday
+                          ? styles.barFillToday
+                          : item.isPeak
+                            ? styles.barFillPeak
+                            : styles.barFillNormal,
+                      ]}
+                    />
+                  </View>
+                  <Text
+                    style={[
+                      styles.barDayText,
+                      isActiveToday && styles.barDayTextActive,
+                    ]}
+                  >
+                    {item.day}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* Quick Stock Status Strip */}
+        <View style={styles.stockNoticeRow}>
+          <View style={styles.stockNoticeLeft}>
+            <MaterialCommunityIcons
+              name="water-alert-outline"
+              size={15}
+              color="#DC2626"
+            />
+            <Text style={styles.stockNoticeText}>
+              জরুরি রক্তের প্রয়োজন:{" "}
+              <Text style={styles.stockHighlight}>O- এবং B-</Text>
+            </Text>
+          </View>
+          <Text style={styles.stockSpeedText}>⚡ গড় সাড়া ৮ মি.</Text>
+        </View>
+      </View>
+
+      {/* Modern Blood Group Filter Section */}
+      <View style={styles.bloodSectionContainer}>
+        {/* Section Header */}
+        <View style={styles.bloodSectionHeader}>
+          <View style={styles.bloodHeaderTitleRow}>
+            <MaterialCommunityIcons name="water" size={15} color="#DC2626" />
+            <Text style={styles.bloodSectionTitle}>রক্তের গ্রুপ নির্বাচন</Text>
+            {selectedBlood !== "all" && (
+              <View style={styles.selectedPillBadge}>
+                <Text style={styles.selectedPillText}>{selectedBlood}</Text>
+              </View>
+            )}
+          </View>
+
+          {selectedBlood !== "all" ? (
+            <TouchableOpacity
+              onPress={() => setSelectedBlood("all")}
+              activeOpacity={0.7}
+              style={styles.clearFilterBtn}
+            >
+              <Ionicons name="close-circle-outline" size={12} color="#DC2626" />
+              <Text style={styles.clearFilterText}>সব দেখুন</Text>
+            </TouchableOpacity>
+          ) : (
+            <Text style={styles.allCountText}>মোট {requests.length}টি সক্রিয় অনুরোধ</Text>
+          )}
+        </View>
+
+        {/* Modern Blood Tokens Horizontal Track */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.bloodCardsScrollTrack}
+        >
+          {/* "All" Card */}
+          <TouchableOpacity
+            style={[
+              styles.bloodCard,
+              selectedBlood === "all" && styles.bloodCardActive,
+            ]}
+            activeOpacity={0.8}
+            onPress={() => setSelectedBlood("all")}
+          >
+            <View style={styles.bloodCardIconWrap}>
+              <MaterialCommunityIcons
+                name="water-outline"
+                size={13}
+                color={selectedBlood === "all" ? "#FFFFFF" : "#64748B"}
+              />
+            </View>
+            <Text
+              style={[
+                styles.bloodCardLabel,
+                selectedBlood === "all" && styles.bloodCardLabelActive,
+              ]}
+            >
+              সব
+            </Text>
+            <View
+              style={[
+                styles.cardBadge,
+                selectedBlood === "all"
+                  ? styles.cardBadgeActive
+                  : styles.cardBadgeNeutral,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.cardBadgeText,
+                  selectedBlood === "all" && styles.cardBadgeTextActive,
+                ]}
+              >
+                {requests.length}
+              </Text>
+            </View>
+          </TouchableOpacity>
+
+          {/* Individual Blood Group Cards */}
+          {BLOOD_GROUPS.map((bg) => {
+            const isSel = selectedBlood === bg;
+            const count = getBloodGroupCount(bg);
+            const hasRequests = count > 0;
+            const isRare = bg === "O-" || bg === "B-" || bg === "AB-";
+
+            return (
+              <TouchableOpacity
+                key={bg}
+                style={[
+                  styles.bloodCard,
+                  isSel && styles.bloodCardActive,
+                  !isSel && hasRequests && styles.bloodCardHasRequests,
+                ]}
+                activeOpacity={0.8}
+                onPress={() => setSelectedBlood(isSel ? "all" : bg)}
+              >
+                {isRare && (
+                  <View
+                    style={[
+                      styles.rareDot,
+                      isSel && styles.rareDotActive,
+                    ]}
+                  />
+                )}
+
+                <View style={styles.bloodCardIconWrap}>
+                  <MaterialCommunityIcons
+                    name="water"
+                    size={12}
+                    color={
+                      isSel
+                        ? "#FFFFFF"
+                        : hasRequests
+                          ? "#DC2626"
+                          : "#94A3B8"
+                    }
+                  />
+                </View>
+
+                <Text
+                  style={[
+                    styles.bloodCardLabel,
+                    isSel && styles.bloodCardLabelActive,
+                  ]}
+                >
+                  {bg}
+                </Text>
+
+                <View
+                  style={[
+                    styles.cardBadge,
+                    isSel
+                      ? styles.cardBadgeActive
+                      : hasRequests
+                        ? styles.cardBadgeUrgent
+                        : styles.cardBadgeMuted,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.cardBadgeText,
+                      isSel
+                        ? styles.cardBadgeTextActive
+                        : hasRequests
+                          ? styles.cardBadgeTextUrgent
+                          : styles.cardBadgeTextMuted,
+                    ]}
+                  >
+                    {count > 0 ? `${count}টি` : "০"}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+    </View>
+  );
+
   const renderItem = ({ item }: { item: BloodRequest }) => {
-    const isCodeRed = item.urgency === 'Code Red';
-    const isEnRoute = item.userStatus === 'en_route';
+    const isCodeRed = item.urgency === "Code Red";
+    const isEnRoute = item.userStatus === "en_route";
     const uc = urgencyColor(item.urgency);
 
     return (
       <TouchableOpacity
         activeOpacity={0.92}
         onPress={() => setSelectedTrackingRequest(item)}
-        style={[
-          styles.card,
-          { backgroundColor: '#FFFFFF' },
-          isCodeRed && styles.codeRedCard,
-        ]}>
-        {/* Urgency Accent Strip */}
-        <View style={[styles.accentStrip, { backgroundColor: uc.dot }]} />
+        style={[styles.feedCard, isCodeRed && styles.feedCardCodeRed]}
+      >
+        {/* Urgency Highlight Left Border */}
+        <View style={[styles.cardUrgencyStrip, { backgroundColor: uc.dot }]} />
 
-        {/* Card Content */}
-        <View style={styles.cardInner}>
-          {/* Top Row: Blood type + Meta */}
-          <View style={styles.topRow}>
-            <View style={[styles.bloodBadge, { backgroundColor: uc.bg }]}>
-              <Text style={[styles.bloodBadgeText, { color: uc.text }]}>
-                {item.bloodType}
-              </Text>
-            </View>
-
-            <View style={styles.topMeta}>
-              <View style={styles.topMetaLeft}>
-                <View style={[styles.urgencyChip, { backgroundColor: uc.bg }]}>
-                  <View style={[styles.urgencyDot, { backgroundColor: uc.dot }]} />
-                  <Text style={[styles.urgencyLabel, { color: uc.text }]}>
-                    {item.urgency === 'Code Red' ? 'কোড রেড' : item.urgency}
-                  </Text>
-                </View>
-                <Text style={styles.units}>
-                  {item.requiredUnits} ব্যাগ
+        <View style={styles.cardContent}>
+          {/* Card Top: Blood group badge + Urgency pill + Units */}
+          <View style={styles.cardTopRow}>
+            <View style={styles.bloodGroupCluster}>
+              <View
+                style={[
+                  styles.bloodBadgeBox,
+                  { backgroundColor: uc.bg, borderColor: uc.border },
+                ]}
+              >
+                <Text style={[styles.bloodBadgeType, { color: uc.text }]}>
+                  {item.bloodType}
                 </Text>
               </View>
-              <Text style={styles.timeAgo}>{item.timeAgo}</Text>
+
+              <View style={[styles.urgencyBadge, { backgroundColor: uc.bg }]}>
+                <View
+                  style={[styles.urgencyDot, { backgroundColor: uc.dot }]}
+                />
+                <Text style={[styles.urgencyLabel, { color: uc.text }]}>
+                  {item.urgency === "Code Red" ? "কোড রেড" : item.urgency}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.metaTopRight}>
+              <Text style={styles.unitsHighlight}>
+                {item.requiredUnits} ব্যাগ প্রয়োজন
+              </Text>
+              <Text style={styles.timeAgoLabel}>{item.timeAgo}</Text>
             </View>
           </View>
 
-          {/* Patient & Requester */}
-          <View style={styles.patientSection}>
+          {/* Patient Details & JU Identity */}
+          <View style={styles.patientRow}>
             <Text style={styles.patientName} numberOfLines={1}>
               {item.patientName}
             </Text>
-            <View style={styles.requesterRow}>
+            <View style={styles.roleDeptRow}>
               <JuBadge role={item.requesterRole} size="sm" />
-              <Text style={styles.deptText} numberOfLines={1}>
+              <Text style={styles.deptLabel} numberOfLines={1}>
                 {item.requesterDepartment}
               </Text>
             </View>
           </View>
 
-          {/* Hospital Location — compact */}
-          <View style={styles.locationRow}>
+          {/* Hospital & Campus Landmark Pill */}
+          <View style={styles.locationStrip}>
             <Ionicons name="location-sharp" size={13} color="#DC2626" />
-            <Text style={styles.hospitalName} numberOfLines={1}>
+            <Text style={styles.hospitalTitle} numberOfLines={1}>
               {item.hospital}
             </Text>
-            <Text style={styles.distanceText}>{item.distance}</Text>
+            <View style={styles.distanceBadge}>
+              <Text style={styles.distanceText}>{item.distance}</Text>
+            </View>
           </View>
 
-          {/* Bottom Actions — compact inline */}
-          <View style={styles.bottomRow}>
-            <View style={styles.respondersInfo}>
+          {/* Bottom Row: Responder Avatar Pile & Tactile Action Buttons */}
+          <View style={styles.cardActionRow}>
+            <View style={styles.responderCol}>
               {item.respondersCount > 0 ? (
-                <>
+                <View style={styles.avatarCluster}>
                   <View style={styles.avatarStack}>
-                    {[0, 1, 2].slice(0, Math.min(item.respondersCount, 3)).map(i => (
-                      <View
-                        key={i}
-                        style={[
-                          styles.miniAvatar,
-                          { marginLeft: i > 0 ? -6 : 0, backgroundColor: i === 0 ? '#DC2626' : i === 1 ? '#0284C7' : '#16A34A' },
-                        ]}>
-                        <Ionicons name="person" size={8} color="#FFFFFF" />
-                      </View>
-                    ))}
+                    {[0, 1, 2]
+                      .slice(0, Math.min(item.respondersCount, 3))
+                      .map((i) => (
+                        <View
+                          key={i}
+                          style={[
+                            styles.miniAvatar,
+                            {
+                              marginLeft: i > 0 ? -5 : 0,
+                              backgroundColor:
+                                i === 0
+                                  ? "#DC2626"
+                                  : i === 1
+                                    ? "#0284C7"
+                                    : "#16A34A",
+                            },
+                          ]}
+                        >
+                          <Ionicons name="person" size={7} color="#FFFFFF" />
+                        </View>
+                      ))}
                   </View>
                   <Text style={styles.respondersText}>
                     {item.respondersCount} জন সাড়া দিয়েছেন
                   </Text>
-                </>
+                </View>
               ) : (
-                <Text style={styles.noRespondersText}>ডোনার প্রয়োজন</Text>
+                <View style={styles.seekingRow}>
+                  <View style={styles.seekingDot} />
+                  <Text style={styles.seekingText}>ডোনার খোঁজা হচ্ছে...</Text>
+                </View>
               )}
             </View>
 
-            <View style={styles.actionBtns}>
+            <View style={styles.actionButtonGroup}>
+              {/* En-Route Action Pill Button */}
               <TouchableOpacity
                 style={[
-                  styles.respondBtn,
-                  isEnRoute && styles.respondBtnActive,
+                  styles.respondPillBtn,
+                  isEnRoute && styles.respondPillBtnActive,
                 ]}
                 activeOpacity={0.85}
-                onPress={() => handleQuickRespond(item)}>
+                onPress={() => handleQuickRespond(item)}
+              >
                 <Ionicons
-                  name={isEnRoute ? 'checkmark' : 'flash'}
-                  size={13}
-                  color={isEnRoute ? '#16A34A' : '#FFFFFF'}
+                  name={isEnRoute ? "checkmark-circle" : "flash"}
+                  size={12}
+                  color={isEnRoute ? "#16A34A" : "#FFFFFF"}
                 />
-                <Text style={[styles.respondBtnText, isEnRoute && styles.respondBtnTextActive]}>
-                  {isEnRoute ? 'রওনা' : 'এগিয়ে আসুন'}
+                <Text
+                  style={[
+                    styles.respondPillText,
+                    isEnRoute && styles.respondPillTextActive,
+                  ]}
+                >
+                  {isEnRoute ? "রওনা হয়েছি" : "এগিয়ে আসুন"}
                 </Text>
               </TouchableOpacity>
 
+              {/* Call Button */}
               <TouchableOpacity
-                style={styles.callBtn}
+                style={styles.iconCircleAction}
                 activeOpacity={0.8}
-                onPress={() => handleCall(item.contactNumber)}>
-                <Ionicons name="call" size={14} color="#64748B" />
+                onPress={() => handleCall(item.contactNumber)}
+              >
+                <Ionicons name="call" size={13} color="#475569" />
+              </TouchableOpacity>
+
+              {/* Share Button */}
+              <TouchableOpacity
+                style={styles.iconCircleAction}
+                activeOpacity={0.8}
+                onPress={() => handleShare(item)}
+              >
+                <Ionicons
+                  name="share-social-outline"
+                  size={13}
+                  color="#475569"
+                />
               </TouchableOpacity>
             </View>
           </View>
@@ -195,68 +558,79 @@ export default function FeedScreen() {
   };
 
   return (
-    <View style={[styles.screen, { backgroundColor: '#F1F5F9' }]}>
-      <CampusHeader subtitle="ক্যাম্পাস ও সাভার ইমার্জেন্সি রক্তের ফিড" />
+    <View style={styles.screen}>
+      <CampusHeader
+        title="সেতু • রক্তের বন্ধন"
+        subtitle="জাহাঙ্গীরনগর বিশ্ববিদ্যালয় ডোনার নেটওয়ার্ক"
+      />
 
-      {/* Inline filter pills */}
-      <View style={styles.filterBar}>
-        {([
-          { id: 'all', label: 'সকল', icon: 'grid-outline' as const },
-          { id: 'Code Red', label: `🔴 জরুরি (${codeRedTotal})`, icon: undefined },
-          { id: 'student', label: 'শিক্ষার্থী', icon: 'school-outline' as const },
-          { id: 'teacher', label: 'শিক্ষক', icon: 'book-outline' as const },
-          { id: 'staff', label: 'কর্মকর্তা', icon: 'briefcase-outline' as const },
-        ] as const).map(f => {
-          const isActive = activeFilter === f.id;
-          return (
-            <TouchableOpacity
-              key={f.id}
-              style={[styles.filterPill, isActive && styles.filterPillActive]}
-              activeOpacity={0.7}
-              onPress={() => setActiveFilter(f.id as typeof activeFilter)}>
-              {f.icon && (
-                <Ionicons
-                  name={f.icon}
-                  size={13}
-                  color={isActive ? '#FFFFFF' : '#64748B'}
-                />
-              )}
-              <Text style={[styles.filterText, isActive && styles.filterTextActive]}>
-                {f.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-
-      {/* Feed */}
       <FlatList
         data={filteredRequests}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item.id}
         renderItem={renderItem}
-        contentContainerStyle={[styles.listContent, { paddingBottom: bottomPadding }]}
+        ListHeaderComponent={renderHeader}
+        contentContainerStyle={[
+          styles.listContent,
+          { paddingBottom: bottomPadding },
+        ]}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#DC2626" />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#DC2626"
+          />
         }
         ListEmptyComponent={
-          <View style={styles.emptyWrap}>
-            <View style={styles.emptyCircle}>
-              <MaterialCommunityIcons name="heart-pulse" size={36} color="#CBD5E1" />
+          <View style={styles.emptyContainer}>
+            <View style={styles.emptyIconCircle}>
+              <MaterialCommunityIcons
+                name="water-off-outline"
+                size={32}
+                color="#CBD5E1"
+              />
             </View>
-            <Text style={styles.emptyTitle}>কোনো অনুরোধ নেই</Text>
-            <Text style={styles.emptySub}>এই ফিল্টারে বর্তমানে কোনো রক্তের অনুরোধ নেই।</Text>
+            <Text style={styles.emptyTitle}>
+              {selectedBlood === "all"
+                ? "কোনো রক্তের অনুরোধ নেই"
+                : `${selectedBlood} গ্রুপের কোনো অনুরোধ নেই`}
+            </Text>
+            <Text style={styles.emptySub}>
+              {selectedBlood === "all"
+                ? "বর্তমানে কোনো সক্রিয় রক্তের অনুরোধ নেই।"
+                : `এই মুহূর্তে ${selectedBlood} গ্রুপের সক্রিয় কোনো রক্তের অনুরোধ নেই।`}
+            </Text>
+            {selectedBlood !== "all" && (
+              <TouchableOpacity
+                style={styles.emptyResetBtn}
+                onPress={() => setSelectedBlood("all")}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="refresh" size={13} color="#FFFFFF" />
+                <Text style={styles.emptyResetBtnText}>সকল রক্তের অনুরোধ দেখুন</Text>
+              </TouchableOpacity>
+            )}
           </View>
         }
       />
 
-      {/* Compact FAB */}
+      {/* Floating Request Button */}
       <TouchableOpacity
-        style={[styles.fab, { bottom: bottomPadding + 8 }]}
+        style={[styles.fab, { bottom: bottomPadding + 10 }]}
         activeOpacity={0.9}
-        onPress={() => router.push('/request')}>
-        <Ionicons name="add" size={22} color="#FFFFFF" />
+        onPress={() => router.push("/request")}
+      >
+        <Ionicons name="add" size={19} color="#FFFFFF" />
+        <Text style={styles.fabText}>অনুরোধ</Text>
       </TouchableOpacity>
+
+      {/* Live Request Tracking Modal */}
+      <RequestTrackingModal
+        visible={!!selectedTrackingRequest}
+        request={selectedTrackingRequest}
+        onClose={() => setSelectedTrackingRequest(null)}
+        onUpdateStatus={updateResponseStatus}
+      />
     </View>
   );
 }
@@ -264,262 +638,610 @@ export default function FeedScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-  },
-  filterBar: {
-    flexDirection: 'row',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    gap: 6,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 0.5,
-    borderBottomColor: 'rgba(226,232,240,0.6)',
-  },
-  filterPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 20,
-    backgroundColor: '#F1F5F9',
-  },
-  filterPillActive: {
-    backgroundColor: '#0F172A',
-  },
-  filterText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#64748B',
-  },
-  filterTextActive: {
-    color: '#FFFFFF',
+    backgroundColor: "#F8FAFC",
   },
   listContent: {
-    padding: 14,
+    paddingHorizontal: 14,
+    paddingTop: 10,
     gap: 10,
   },
-  card: {
+  headerBlock: {
+    gap: 10,
+    marginBottom: 4,
+  },
+  impactCard: {
+    backgroundColor: "#FFFFFF",
     borderRadius: 14,
-    overflow: 'hidden',
-    shadowColor: '#0F172A',
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    gap: 10,
+    shadowColor: "#0F172A",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
   },
-  codeRedCard: {
-    shadowColor: '#DC2626',
-    shadowOpacity: 0.1,
-  },
-  accentStrip: {
-    height: 3,
-    width: '100%',
-  },
-  cardInner: {
-    padding: 14,
+  impactTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
     gap: 10,
   },
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  bloodBadge: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  bloodBadgeText: {
-    fontSize: 16,
-    fontWeight: '900',
-    letterSpacing: -0.5,
-  },
-  topMeta: {
+  impactTitleCol: {
     flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    gap: 4,
   },
-  topMetaLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  impactLiveBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+  impactDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#16A34A",
+  },
+  impactLiveText: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: "#16A34A",
+    letterSpacing: 0.2,
+  },
+  impactQuoteText: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#0F172A",
+    lineHeight: 16,
+  },
+  heroActionBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 8,
+    height: 26,
+    borderRadius: 6,
+    backgroundColor: "#FEF2F2",
+    borderWidth: 0.8,
+    borderColor: "#FECACA",
+  },
+  heroActionText: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: "#DC2626",
+  },
+  graphContainer: {
+    backgroundColor: "#F8FAFC",
+    borderRadius: 10,
+    padding: 10,
+    gap: 8,
+  },
+  graphHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  graphSubtitle: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#475569",
+  },
+  graphHighlight: {
+    color: "#DC2626",
+    fontWeight: "800",
+  },
+  peakIndicator: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 2,
+    backgroundColor: "#DCFCE7",
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 4,
+  },
+  peakText: {
+    fontSize: 9,
+    fontWeight: "800",
+    color: "#15803D",
+  },
+  barsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    height: 68,
+    paddingTop: 8,
+    paddingHorizontal: 4,
+  },
+  barCol: {
+    alignItems: "center",
+    gap: 3,
+    flex: 1,
+  },
+  barBagsLabel: {
+    fontSize: 9,
+    fontWeight: "700",
+    color: "#94A3B8",
+  },
+  barBagsLabelActive: {
+    color: "#DC2626",
+    fontWeight: "900",
+  },
+  barTrack: {
+    width: 14,
+    height: 40,
+    backgroundColor: "#E2E8F0",
+    borderRadius: 7,
+    justifyContent: "flex-end",
+    overflow: "hidden",
+  },
+  barFill: {
+    width: "100%",
+    borderRadius: 7,
+  },
+  barFillNormal: {
+    backgroundColor: "#94A3B8",
+  },
+  barFillPeak: {
+    backgroundColor: "#0284C7",
+  },
+  barFillToday: {
+    backgroundColor: "#DC2626",
+  },
+  barDayText: {
+    fontSize: 9,
+    fontWeight: "600",
+    color: "#64748B",
+  },
+  barDayTextActive: {
+    color: "#DC2626",
+    fontWeight: "800",
+  },
+  stockNoticeRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#FEF2F2",
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 7,
+  },
+  stockNoticeLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+  stockNoticeText: {
+    fontSize: 10,
+    fontWeight: "600",
+    color: "#475569",
+  },
+  stockHighlight: {
+    color: "#DC2626",
+    fontWeight: "800",
+  },
+  stockSpeedText: {
+    fontSize: 9,
+    fontWeight: "700",
+    color: "#DC2626",
+  },
+  bloodSectionContainer: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    paddingVertical: 10,
+    gap: 8,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  bloodSectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 12,
+  },
+  bloodHeaderTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+  bloodSectionTitle: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#1E293B",
+  },
+  selectedPillBadge: {
+    backgroundColor: "#DC2626",
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 4,
+  },
+  selectedPillText: {
+    fontSize: 10,
+    fontWeight: "900",
+    color: "#FFFFFF",
+  },
+  clearFilterBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    backgroundColor: "#FEF2F2",
+    paddingHorizontal: 8,
+    paddingVertical: 2.5,
+    borderRadius: 6,
+    borderWidth: 0.8,
+    borderColor: "#FECACA",
+  },
+  clearFilterText: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: "#DC2626",
+  },
+  allCountText: {
+    fontSize: 10,
+    fontWeight: "600",
+    color: "#64748B",
+  },
+  bloodCardsScrollTrack: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
+    paddingHorizontal: 10,
+    paddingVertical: 2,
+  },
+  bloodCard: {
+    width: 54,
+    height: 62,
+    borderRadius: 12,
+    backgroundColor: "#F8FAFC",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 6,
+    position: "relative",
+  },
+  bloodCardActive: {
+    backgroundColor: "#DC2626",
+    borderColor: "#DC2626",
+    shadowColor: "#DC2626",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  bloodCardHasRequests: {
+    borderColor: "#FECACA",
+    backgroundColor: "#FFFFFF",
+  },
+  bloodCardIconWrap: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  bloodCardLabel: {
+    fontSize: 13,
+    fontWeight: "900",
+    color: "#0F172A",
+    letterSpacing: -0.2,
+  },
+  bloodCardLabelActive: {
+    color: "#FFFFFF",
+  },
+  rareDot: {
+    position: "absolute",
+    top: 4,
+    right: 4,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "#DC2626",
+  },
+  rareDotActive: {
+    backgroundColor: "#FFFFFF",
+  },
+  cardBadge: {
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 4,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cardBadgeNeutral: {
+    backgroundColor: "#E2E8F0",
+  },
+  cardBadgeActive: {
+    backgroundColor: "rgba(255, 255, 255, 0.25)",
+  },
+  cardBadgeUrgent: {
+    backgroundColor: "#FEF2F2",
+  },
+  cardBadgeMuted: {
+    backgroundColor: "#F1F5F9",
+  },
+  cardBadgeText: {
+    fontSize: 9,
+    fontWeight: "800",
+  },
+  cardBadgeTextActive: {
+    color: "#FFFFFF",
+  },
+  cardBadgeTextUrgent: {
+    color: "#DC2626",
+  },
+  cardBadgeTextMuted: {
+    color: "#94A3B8",
+  },
+  feedCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    flexDirection: "row",
+    overflow: "hidden",
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  feedCardCodeRed: {
+    borderColor: "#FECACA",
+  },
+  cardUrgencyStrip: {
+    width: 4,
+  },
+  cardContent: {
+    flex: 1,
+    padding: 12,
+    gap: 8,
+  },
+  cardTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  bloodGroupCluster: {
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
   },
-  urgencyChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 7,
-    paddingVertical: 3,
+  bloodBadgeBox: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
     borderRadius: 6,
+    borderWidth: 0.8,
+  },
+  bloodBadgeType: {
+    fontSize: 13,
+    fontWeight: "900",
+  },
+  urgencyBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 5,
   },
   urgencyDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
   },
   urgencyLabel: {
-    fontSize: 10,
-    fontWeight: '700',
+    fontSize: 9,
+    fontWeight: "800",
   },
-  units: {
+  metaTopRight: {
+    alignItems: "flex-end",
+    gap: 1,
+  },
+  unitsHighlight: {
     fontSize: 11,
-    fontWeight: '800',
-    color: '#DC2626',
+    fontWeight: "800",
+    color: "#DC2626",
   },
-  timeAgo: {
-    fontSize: 10,
-    fontWeight: '500',
-    color: '#94A3B8',
+  timeAgoLabel: {
+    fontSize: 9,
+    fontWeight: "500",
+    color: "#94A3B8",
   },
-  patientSection: {
-    gap: 3,
+  patientRow: {
+    gap: 2,
   },
   patientName: {
     fontSize: 14,
-    fontWeight: '800',
-    color: '#0F172A',
+    fontWeight: "800",
+    color: "#0F172A",
     letterSpacing: -0.2,
   },
-  requesterRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  roleDeptRow: {
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
   },
-  deptText: {
+  deptLabel: {
     fontSize: 11,
-    fontWeight: '500',
-    color: '#64748B',
+    fontWeight: "500",
+    color: "#64748B",
     flex: 1,
   },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  locationStrip: {
+    flexDirection: "row",
+    alignItems: "center",
     gap: 5,
-    backgroundColor: '#FEF2F2',
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-    borderRadius: 8,
+    backgroundColor: "#F8FAFC",
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 7,
   },
-  hospitalName: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#0F172A',
+  hospitalTitle: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#334155",
     flex: 1,
+  },
+  distanceBadge: {
+    backgroundColor: "#E2E8F0",
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 4,
   },
   distanceText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: '#94A3B8',
+    fontSize: 9,
+    fontWeight: "700",
+    color: "#475569",
   },
-  bottomRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  cardActionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingTop: 4,
+    borderTopWidth: 0.5,
+    borderTopColor: "#F1F5F9",
   },
-  respondersInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
+  responderCol: {
+    flex: 1,
+  },
+  avatarCluster: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
   },
   avatarStack: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   miniAvatar: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: '#FFFFFF',
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 1.2,
+    borderColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
   },
   respondersText: {
     fontSize: 10,
-    fontWeight: '600',
-    color: '#64748B',
+    fontWeight: "600",
+    color: "#15803D",
   },
-  noRespondersText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: '#DC2626',
-  },
-  actionBtns: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  respondBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  seekingRow: {
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
-    backgroundColor: '#DC2626',
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 8,
   },
-  respondBtnActive: {
-    backgroundColor: '#F0FDF4',
-    borderWidth: 1,
-    borderColor: '#BBF7D0',
+  seekingDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: "#94A3B8",
   },
-  respondBtnText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#FFFFFF',
+  seekingText: {
+    fontSize: 10,
+    fontWeight: "500",
+    color: "#94A3B8",
   },
-  respondBtnTextActive: {
-    color: '#16A34A',
+  actionButtonGroup: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
   },
-  callBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    backgroundColor: '#F1F5F9',
-    justifyContent: 'center',
-    alignItems: 'center',
+  respondPillBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: "#DC2626",
+    paddingHorizontal: 9,
+    height: 28,
+    borderRadius: 6,
   },
-  emptyWrap: {
-    alignItems: 'center',
-    paddingVertical: 60,
-    gap: 8,
+  respondPillBtnActive: {
+    backgroundColor: "#DCFCE7",
+    borderWidth: 0.8,
+    borderColor: "#86EFAC",
   },
-  emptyCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#F1F5F9',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 4,
+  respondPillText: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: "#FFFFFF",
   },
-  emptyTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#0F172A',
+  respondPillTextActive: {
+    color: "#15803D",
   },
-  emptySub: {
-    fontSize: 12,
-    color: '#94A3B8',
-    textAlign: 'center',
-    maxWidth: 240,
+  iconCircleAction: {
+    width: 28,
+    height: 28,
+    borderRadius: 6,
+    backgroundColor: "#F1F5F9",
+    justifyContent: "center",
+    alignItems: "center",
   },
   fab: {
-    position: 'absolute',
-    right: 18,
+    position: "absolute",
+    right: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: "#DC2626",
+    paddingHorizontal: 14,
+    height: 38,
+    borderRadius: 19,
+    shadowColor: "#DC2626",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  fabText: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#FFFFFF",
+  },
+  emptyContainer: {
+    alignItems: "center",
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+    gap: 8,
+  },
+  emptyIconCircle: {
     width: 50,
     height: 50,
-    borderRadius: 16,
-    backgroundColor: '#DC2626',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#DC2626',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    elevation: 8,
+    borderRadius: 25,
+    backgroundColor: "#F1F5F9",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyTitle: {
+    fontSize: 14,
+    fontWeight: "800",
+    color: "#475569",
+    textAlign: "center",
+  },
+  emptySub: {
+    fontSize: 11,
+    fontWeight: "500",
+    color: "#94A3B8",
+    textAlign: "center",
+    lineHeight: 16,
+  },
+  emptyResetBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    backgroundColor: "#DC2626",
+    paddingHorizontal: 14,
+    height: 34,
+    borderRadius: 17,
+    marginTop: 6,
+  },
+  emptyResetBtnText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#FFFFFF",
   },
 });

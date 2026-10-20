@@ -200,7 +200,7 @@ export function OnboardingSlider({ visible, onFinish }: OnboardingSliderProps) {
 
           {/* Action Row */}
           <View style={styles.actionRow}>
-            {currentIndex > 0 ? (
+            {currentIndex > 0 && (
               <TouchableOpacity
                 style={[styles.backBtn, { borderColor: theme.cardBorder }]}
                 activeOpacity={0.7}
@@ -209,11 +209,9 @@ export function OnboardingSlider({ visible, onFinish }: OnboardingSliderProps) {
                   flatListRef.current?.scrollToIndex({ index: prev, animated: true });
                   setCurrentIndex(prev);
                 }}>
-                <Ionicons name="arrow-back" size={18} color={theme.text} />
+                <Ionicons name="arrow-back" size={15} color={theme.text} />
                 <Text style={[styles.backBtnText, { color: theme.text }]}>পূর্ববর্তী</Text>
               </TouchableOpacity>
-            ) : (
-              <View style={{ width: 80 }} />
             )}
 
             <TouchableOpacity
@@ -225,7 +223,7 @@ export function OnboardingSlider({ visible, onFinish }: OnboardingSliderProps) {
               </Text>
               <Ionicons
                 name={currentIndex === SLIDES.length - 1 ? 'checkmark-circle' : 'arrow-forward'}
-                size={18}
+                size={16}
                 color="#FFFFFF"
               />
             </TouchableOpacity>
@@ -272,13 +270,16 @@ const styles = StyleSheet.create({
     letterSpacing: -0.2,
   },
   skipButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingHorizontal: 10,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#F1F5F9',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   skipText: {
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: 11,
+    fontWeight: '700',
   },
   sliderList: {
     flex: 1,
@@ -378,29 +379,30 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 6,
-    marginBottom: 16,
+    marginBottom: 14,
   },
   dot: {
-    height: 8,
-    borderRadius: 4,
+    height: 5,
+    borderRadius: 2.5,
   },
   actionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
+    gap: 10,
   },
   backBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 14,
+    gap: 5,
+    paddingHorizontal: 14,
+    height: 40,
+    borderRadius: 10,
     borderWidth: 1,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
   },
   backBtnText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '700',
   },
   nextBtn: {
@@ -408,18 +410,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 14,
-    borderRadius: 14,
+    gap: 6,
+    height: 40,
+    borderRadius: 10,
     shadowColor: '#DC2626',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
     elevation: 3,
   },
   nextBtnText: {
     color: '#FFFFFF',
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '800',
   },
 });

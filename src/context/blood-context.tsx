@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   BloodDrive,
   BloodGroup,
@@ -9,6 +10,8 @@ import {
   ResponderStatus,
 } from '@/types/blood';
 import { bloodService } from '@/services/api/blood-service';
+
+const ONBOARDING_STORAGE_KEY = '@setu_has_seen_onboarding_v1';
 
 interface BloodContextType {
   requests: BloodRequest[];
@@ -58,21 +61,36 @@ export function BloodProvider({ children }: { children: React.ReactNode }) {
   });
 
   const [isLoading, setIsLoading] = useState(true);
-  const [showSplash, setShowSplash] = useState(true);
+  // Default to false so emergency users are never blocked unnecessarily
+  const [showSplash, setShowSplashState] = useState(false);
   const [selectedTrackingRequest, setSelectedTrackingRequest] = useState<BloodRequest | null>(null);
+
+  const setShowSplash = (show: boolean) => {
+    setShowSplashState(show);
+    if (!show) {
+      // Mark as seen so it never auto-shows on future launches
+      AsyncStorage.setItem(ONBOARDING_STORAGE_KEY, 'true').catch(() => {});
+    }
+  };
 
   const refreshAll = async () => {
     try {
-      const [reqData, donorData, driveData, profData] = await Promise.all([
+      const [reqData, donorData, driveData, profData, hasSeenOnboarding] = await Promise.all([
         bloodService.getRequests(),
         bloodService.getDonors(),
         bloodService.getDrives(),
         bloodService.getProfile(),
+        AsyncStorage.getItem(ONBOARDING_STORAGE_KEY).catch(() => 'true'),
       ]);
       setRequests(reqData);
       setDonors(donorData);
       setDrives(driveData);
       setProfile(profData);
+
+      // Only auto-show for first-time installation
+      if (!hasSeenOnboarding) {
+        setShowSplashState(true);
+      }
     } finally {
       setIsLoading(false);
     }

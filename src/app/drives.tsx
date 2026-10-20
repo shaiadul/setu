@@ -31,6 +31,17 @@ export default function DirectoryAndDrivesScreen() {
 
   const bottomPadding = 56 + Math.max(insets.bottom, 12);
 
+  const isFiltered =
+    selectedRole !== 'all' ||
+    selectedBlood !== 'all' ||
+    searchQuery.trim().length > 0;
+
+  const resetDonorFilters = () => {
+    setSelectedRole('all');
+    setSelectedBlood('all');
+    setSearchQuery('');
+  };
+
   const filteredDonors = donors.filter(d => {
     if (selectedRole !== 'all' && d.role !== selectedRole) return false;
     if (selectedBlood !== 'all' && d.bloodType !== selectedBlood) return false;
@@ -309,11 +320,28 @@ export default function DirectoryAndDrivesScreen() {
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <MaterialCommunityIcons name="account-search-outline" size={48} color="#CBD5E1" />
+                <View style={styles.emptyIconCircle}>
+                  <MaterialCommunityIcons
+                    name="account-search-outline"
+                    size={32}
+                    color="#CBD5E1"
+                  />
+                </View>
                 <Text style={styles.emptyTitle}>কোনো রক্তদাতা মেলেনি</Text>
                 <Text style={styles.emptySub}>
-                  অন্য কোনো রক্তের গ্রুপ বা বিভাগ দিয়ে সার্চ করে দেখুন।
+                  {isFiltered
+                    ? 'আপনার বর্তমান অনুসন্ধান বা ফিল্টারে কোনো রক্তদাতা পাওয়া যায়নি।'
+                    : 'অন্য কোনো রক্তের গ্রুপ বা বিভাগ দিয়ে সার্চ করে দেখুন।'}
                 </Text>
+                {isFiltered && (
+                  <TouchableOpacity
+                    style={styles.emptyResetBtn}
+                    onPress={resetDonorFilters}
+                    activeOpacity={0.8}>
+                    <Ionicons name="refresh" size={13} color="#FFFFFF" />
+                    <Text style={styles.emptyResetBtnText}>সকল রক্তদাতা দেখুন</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             }
           />
@@ -602,5 +630,28 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#94A3B8',
     lineHeight: 16,
+  },
+  emptyIconCircle: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#F1F5F9',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyResetBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#DC2626',
+    paddingHorizontal: 14,
+    height: 34,
+    borderRadius: 17,
+    marginTop: 6,
+  },
+  emptyResetBtnText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 });

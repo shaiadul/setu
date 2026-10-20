@@ -1,21 +1,19 @@
-import React from 'react';
+import { BloodGroupBadge } from "@/components/blood-group-badge";
+import { JuBadge } from "@/components/ju-badge";
+import { useTheme } from "@/hooks/use-theme";
+import { BloodRequest, ResponderStatus } from "@/types/blood";
+import { Ionicons } from "@expo/vector-icons";
 import {
   Alert,
   Linking,
   Modal,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { BloodRequest, ResponderStatus } from '@/types/blood';
-import { useTheme } from '@/hooks/use-theme';
-import { JuBadge } from '@/components/ju-badge';
-import { BloodGroupBadge } from '@/components/blood-group-badge';
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface RequestTrackingModalProps {
   visible: boolean;
@@ -38,59 +36,77 @@ export function RequestTrackingModal({
   const handleCall = (phoneNumber: string) => {
     const url = `tel:${phoneNumber}`;
     Linking.canOpenURL(url)
-      .then(supported => {
+      .then((supported) => {
         if (supported) {
           Linking.openURL(url);
         } else {
-          Alert.alert('কল ব্যর্থ', `ফোন নম্বর: ${phoneNumber}`);
+          Alert.alert("কল ব্যর্থ", `ফোন নম্বর: ${phoneNumber}`);
         }
       })
-      .catch(() => Alert.alert('কল ব্যর্থ', `ফোন নম্বর: ${phoneNumber}`));
+      .catch(() => Alert.alert("কল ব্যর্থ", `ফোন নম্বর: ${phoneNumber}`));
   };
 
   const handleSms = (phoneNumber: string) => {
     const url = `sms:${phoneNumber}`;
-    Linking.openURL(url).catch(() => Alert.alert('মেসেজ ব্যর্থ', `ফোন নম্বর: ${phoneNumber}`));
+    Linking.openURL(url).catch(() =>
+      Alert.alert("মেসেজ ব্যর্থ", `ফোন নম্বর: ${phoneNumber}`),
+    );
   };
 
-  const hasResponders = (request.activeResponders && request.activeResponders.length > 0) || request.userStatus !== 'none';
-  const isEnRoute = request.userStatus === 'en_route';
-  const isArrived = request.userStatus === 'arrived';
-  const isDonated = request.userStatus === 'donated';
+  const hasResponders =
+    (request.activeResponders && request.activeResponders.length > 0) ||
+    request.userStatus !== "none";
+  const isEnRoute = request.userStatus === "en_route";
+  const isArrived = request.userStatus === "arrived";
+  const isDonated = request.userStatus === "donated";
 
   const steps = [
     {
-      titleBn: 'অনুরোধ সম্প্রচারিত',
-      titleEn: 'Request Broadcasted',
+      titleBn: "অনুরোধ সম্প্রচারিত",
+      titleEn: "Request Broadcasted",
       desc: `${request.hospital}-এ ${request.requiredUnits} ব্যাগ রক্ত প্রয়োজন`,
       completed: true,
       current: false,
     },
     {
-      titleBn: 'ডোনার সাড়া দিয়েছেন',
-      titleEn: 'Donor Confirmed',
-      desc: hasResponders ? `${request.respondersCount} জন রক্তদাতা সাড়া দিয়েছেন` : 'ক্যাম্পাস ডোনারদের উত্তরের অপেক্ষায়...',
+      titleBn: "ডোনার সাড়া দিয়েছেন",
+      titleEn: "Donor Confirmed",
+      desc: hasResponders
+        ? `${request.respondersCount} জন রক্তদাতা সাড়া দিয়েছেন`
+        : "ক্যাম্পাস ডোনারদের উত্তরের অপেক্ষায়...",
       completed: hasResponders,
       current: hasResponders && !isEnRoute && !isArrived && !isDonated,
     },
     {
-      titleBn: 'হাসপাতালের উদ্দেশ্যে রওনা',
-      titleEn: 'En Route to Hospital',
-      desc: isArrived || isDonated ? 'রক্তদাতা ওয়ার্ডে পৌঁছেছেন' : isEnRoute ? 'রক্তদাতা বর্তমানে পথে রয়েছেন' : 'মেডিকেল সেন্টারে পৌঁছানোর প্রস্তুতি',
+      titleBn: "হাসপাতালের উদ্দেশ্যে রওনা",
+      titleEn: "En Route to Hospital",
+      desc:
+        isArrived || isDonated
+          ? "রক্তদাতা ওয়ার্ডে পৌঁছেছেন"
+          : isEnRoute
+            ? "রক্তদাতা বর্তমানে পথে রয়েছেন"
+            : "মেডিকেল সেন্টারে পৌঁছানোর প্রস্তুতি",
       completed: isArrived || isDonated,
       current: isEnRoute,
     },
     {
-      titleBn: 'রক্তদান সম্পন্ন',
-      titleEn: 'Donation Completed',
-      desc: isDonated ? 'রক্তদান সফলভাবে সম্পন্ন হয়েছে' : 'স্ক্রিনিং ও রক্ত সংগ্রহ প্রক্রিয়া',
+      titleBn: "রক্তদান সম্পন্ন",
+      titleEn: "Donation Completed",
+      desc: isDonated
+        ? "রক্তদান সফলভাবে সম্পন্ন হয়েছে"
+        : "স্ক্রিনিং ও রক্ত সংগ্রহ প্রক্রিয়া",
       completed: isDonated,
       current: isArrived,
     },
   ];
 
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent
+      onRequestClose={onClose}
+    >
       <View style={styles.backdrop}>
         <View
           style={[
@@ -99,35 +115,69 @@ export function RequestTrackingModal({
               backgroundColor: theme.background,
               paddingBottom: Math.max(insets.bottom, 16),
             },
-          ]}>
+          ]}
+        >
           {/* Header Bar */}
-          <View style={[styles.headerBar, { borderBottomColor: theme.cardBorder }]}>
+          <View
+            style={[styles.headerBar, { borderBottomColor: theme.cardBorder }]}
+          >
             <View style={styles.dragPill} />
             <View style={styles.headerContentRow}>
               <View>
-                <Text style={[styles.modalTitle, { color: theme.text }]}>লাইভ রক্তদান ট্র্যাকিং</Text>
-                <Text style={[styles.modalSubtitle, { color: theme.textSecondary }]}>
+                <Text style={[styles.modalTitle, { color: theme.text }]}>
+                  লাইভ রক্তদান ট্র্যাকিং
+                </Text>
+                <Text
+                  style={[styles.modalSubtitle, { color: theme.textSecondary }]}
+                >
                   Live Donor Relay • SOS #{request.id.slice(-6)}
                 </Text>
               </View>
 
-              <TouchableOpacity style={[styles.closeBtn, { backgroundColor: theme.backgroundElement }]} onPress={onClose}>
+              <TouchableOpacity
+                style={[
+                  styles.closeBtn,
+                  { backgroundColor: theme.backgroundElement },
+                ]}
+                onPress={onClose}
+              >
                 <Ionicons name="close" size={20} color={theme.text} />
               </TouchableOpacity>
             </View>
           </View>
 
-          <ScrollView style={styles.scrollArea} contentContainerStyle={styles.scrollContent}>
+          <ScrollView
+            style={styles.scrollArea}
+            contentContainerStyle={styles.scrollContent}
+          >
             {/* Request Summary Card */}
-            <View style={[styles.summaryCard, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
+            <View
+              style={[
+                styles.summaryCard,
+                { backgroundColor: theme.card, borderColor: theme.cardBorder },
+              ]}
+            >
               <View style={styles.summaryTop}>
-                <BloodGroupBadge bloodType={request.bloodType} size="md" highlightUniversal />
+                <BloodGroupBadge
+                  bloodType={request.bloodType}
+                  size="md"
+                  highlightUniversal
+                />
                 <View style={styles.patientInfo}>
-                  <Text style={[styles.patientName, { color: theme.text }]}>{request.patientName}</Text>
-                  <Text style={[styles.hospitalText, { color: theme.secondaryDark }]}>
+                  <Text style={[styles.patientName, { color: theme.text }]}>
+                    {request.patientName}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.hospitalText,
+                      { color: theme.secondaryDark },
+                    ]}
+                  >
                     📍 {request.hospital}
                   </Text>
-                  <Text style={[styles.roomText, { color: theme.textSecondary }]}>
+                  <Text
+                    style={[styles.roomText, { color: theme.textSecondary }]}
+                  >
                     {request.room} ({request.distance})
                   </Text>
                 </View>
@@ -135,25 +185,42 @@ export function RequestTrackingModal({
                   style={[
                     styles.urgencyBadge,
                     {
-                      backgroundColor: request.urgency === 'Code Red' ? theme.primaryContainer : theme.secondaryLight,
+                      backgroundColor:
+                        request.urgency === "Code Red"
+                          ? theme.primaryContainer
+                          : theme.secondaryLight,
                     },
-                  ]}>
+                  ]}
+                >
                   <Text
                     style={[
                       styles.urgencyText,
-                      { color: request.urgency === 'Code Red' ? theme.primary : theme.secondaryDark },
-                    ]}>
+                      {
+                        color:
+                          request.urgency === "Code Red"
+                            ? theme.primary
+                            : theme.secondaryDark,
+                      },
+                    ]}
+                  >
                     {request.urgency}
                   </Text>
                 </View>
               </View>
 
               {/* Requester Info & Direct Call */}
-              <View style={[styles.contactBox, { backgroundColor: theme.backgroundElement }]}>
+              <View
+                style={[
+                  styles.contactBox,
+                  { backgroundColor: theme.backgroundElement },
+                ]}
+              >
                 <View style={styles.contactLeft}>
                   <View style={styles.roleRow}>
                     <JuBadge role={request.requesterRole} size="sm" />
-                    <Text style={[styles.deptText, { color: theme.textSecondary }]}>
+                    <Text
+                      style={[styles.deptText, { color: theme.textSecondary }]}
+                    >
                       {request.requesterDepartment}
                     </Text>
                   </View>
@@ -161,29 +228,19 @@ export function RequestTrackingModal({
                     📞 {request.contactNumber}
                   </Text>
                 </View>
-
-                <View style={styles.contactButtons}>
-                  <TouchableOpacity
-                    style={[styles.callBtn, { backgroundColor: theme.primary }]}
-                    activeOpacity={0.8}
-                    onPress={() => handleCall(request.contactNumber)}>
-                    <Ionicons name="call" size={16} color="#FFFFFF" />
-                    <Text style={styles.callBtnText}>কল</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[styles.smsBtn, { backgroundColor: theme.secondaryLight, borderColor: theme.secondary }]}
-                    activeOpacity={0.8}
-                    onPress={() => handleSms(request.contactNumber)}>
-                    <Ionicons name="chatbubble-ellipses-outline" size={16} color={theme.secondaryDark} />
-                  </TouchableOpacity>
-                </View>
               </View>
             </View>
 
             {/* Timeline Section */}
-            <View style={[styles.timelineCard, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
-              <Text style={[styles.sectionTitle, { color: theme.text }]}>ট্র্যাকিং টাইমলাইন (Progress)</Text>
+            <View
+              style={[
+                styles.timelineCard,
+                { backgroundColor: theme.card, borderColor: theme.cardBorder },
+              ]}
+            >
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>
+                ট্র্যাকিং টাইমলাইন (Progress)
+              </Text>
 
               <View style={styles.timelineList}>
                 {steps.map((step, idx) => (
@@ -193,21 +250,36 @@ export function RequestTrackingModal({
                         style={[
                           styles.timelineCircle,
                           {
-                            backgroundColor: step.completed ? theme.primary : theme.backgroundElement,
-                            borderColor: step.current ? theme.primary : step.completed ? theme.primary : theme.cardBorder,
+                            backgroundColor: step.completed
+                              ? theme.primary
+                              : theme.backgroundElement,
+                            borderColor: step.current
+                              ? theme.primary
+                              : step.completed
+                                ? theme.primary
+                                : theme.cardBorder,
                           },
-                        ]}>
+                        ]}
+                      >
                         <Ionicons
-                          name={step.completed ? 'checkmark' : 'radio-button-off'}
+                          name={
+                            step.completed ? "checkmark" : "radio-button-off"
+                          }
                           size={12}
-                          color={step.completed ? '#FFFFFF' : theme.textSecondary}
+                          color={
+                            step.completed ? "#FFFFFF" : theme.textSecondary
+                          }
                         />
                       </View>
                       {idx < steps.length - 1 && (
                         <View
                           style={[
                             styles.timelineLine,
-                            { backgroundColor: step.completed ? theme.primary : theme.cardBorder },
+                            {
+                              backgroundColor: step.completed
+                                ? theme.primary
+                                : theme.cardBorder,
+                            },
                           ]}
                         />
                       )}
@@ -217,11 +289,24 @@ export function RequestTrackingModal({
                       <Text
                         style={[
                           styles.stepTitle,
-                          { color: step.completed || step.current ? theme.text : theme.textSecondary },
-                        ]}>
+                          {
+                            color:
+                              step.completed || step.current
+                                ? theme.text
+                                : theme.textSecondary,
+                          },
+                        ]}
+                      >
                         {step.titleBn}
                       </Text>
-                      <Text style={[styles.stepDesc, { color: theme.textSecondary }]}>{step.desc}</Text>
+                      <Text
+                        style={[
+                          styles.stepDesc,
+                          { color: theme.textSecondary },
+                        ]}
+                      >
+                        {step.desc}
+                      </Text>
                     </View>
                   </View>
                 ))}
@@ -229,42 +314,82 @@ export function RequestTrackingModal({
             </View>
 
             {/* Responders Section */}
-            <View style={[styles.respondersCard, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
+            <View
+              style={[
+                styles.respondersCard,
+                { backgroundColor: theme.card, borderColor: theme.cardBorder },
+              ]}
+            >
               <View style={styles.respondersHeader}>
-                <Text style={[styles.sectionTitle, { color: theme.text }]}>রক্তদাতা রেসপন্ডারবৃন্দ ({request.respondersCount})</Text>
+                <Text style={[styles.sectionTitle, { color: theme.text }]}>
+                  রক্তদাতা রেসপন্ডারবৃন্দ ({request.respondersCount})
+                </Text>
               </View>
 
-              {request.activeResponders && request.activeResponders.length > 0 ? (
-                request.activeResponders.map(resp => (
+              {request.activeResponders &&
+              request.activeResponders.length > 0 ? (
+                request.activeResponders.map((resp) => (
                   <View
                     key={resp.id}
-                    style={[styles.responderRow, { backgroundColor: theme.backgroundElement, borderColor: theme.cardBorder }]}>
+                    style={[
+                      styles.responderRow,
+                      {
+                        backgroundColor: theme.backgroundElement,
+                        borderColor: theme.cardBorder,
+                      },
+                    ]}
+                  >
                     <View style={styles.respInfo}>
                       <View style={styles.respTopRow}>
-                        <Text style={[styles.respName, { color: theme.text }]}>{resp.name}</Text>
+                        <Text style={[styles.respName, { color: theme.text }]}>
+                          {resp.name}
+                        </Text>
                         <JuBadge role={resp.role} size="sm" />
                       </View>
-                      <Text style={[styles.respDept, { color: theme.textSecondary }]}>
+                      <Text
+                        style={[
+                          styles.respDept,
+                          { color: theme.textSecondary },
+                        ]}
+                      >
                         {resp.departmentOrOffice}
                       </Text>
                       <View style={styles.etaRow}>
-                        <Ionicons name="time-outline" size={13} color={theme.primary} />
-                        <Text style={[styles.etaText, { color: theme.primary }]}>ETA: {resp.eta}</Text>
+                        <Ionicons
+                          name="time-outline"
+                          size={13}
+                          color={theme.primary}
+                        />
+                        <Text
+                          style={[styles.etaText, { color: theme.primary }]}
+                        >
+                          ETA: {resp.eta}
+                        </Text>
                       </View>
                     </View>
 
                     <TouchableOpacity
-                      style={[styles.respCallBtn, { backgroundColor: theme.primaryLight }]}
+                      style={[
+                        styles.respCallBtn,
+                        { backgroundColor: theme.primaryLight },
+                      ]}
                       activeOpacity={0.8}
-                      onPress={() => handleCall(resp.phone)}>
+                      onPress={() => handleCall(resp.phone)}
+                    >
                       <Ionicons name="call" size={16} color={theme.primary} />
                     </TouchableOpacity>
                   </View>
                 ))
               ) : (
                 <View style={styles.emptyResponders}>
-                  <Ionicons name="pulse" size={28} color={theme.textSecondary} />
-                  <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
+                  <Ionicons
+                    name="pulse"
+                    size={28}
+                    color={theme.textSecondary}
+                  />
+                  <Text
+                    style={[styles.emptyText, { color: theme.textSecondary }]}
+                  >
                     এখনও কোনো রক্তদাতা সাড়া দেননি। আপনি এগিয়ে আসুন!
                   </Text>
                 </View>
@@ -273,54 +398,121 @@ export function RequestTrackingModal({
           </ScrollView>
 
           {/* Bottom Action Footer for current user */}
-          <View style={[styles.footerBar, { borderTopColor: theme.cardBorder, backgroundColor: theme.card }]}>
-            {request.userStatus === 'none' ? (
+          <View
+            style={[
+              styles.footerBar,
+              { borderTopColor: theme.cardBorder, backgroundColor: theme.card },
+            ]}
+          >
+            {request.userStatus === "none" ? (
               <TouchableOpacity
-                style={[styles.primaryActionBtn, { backgroundColor: theme.primary }]}
+                style={[
+                  styles.primaryActionBtn,
+                  { backgroundColor: theme.primary },
+                ]}
                 activeOpacity={0.88}
                 onPress={() => {
-                  onUpdateStatus(request.id, 'en_route');
-                  Alert.alert('ধন্যবাদ!', 'আপনার রওনা হওয়ার খবর রোগীর স্বজন ও মেডিকেল টিমে পৌঁছে দেওয়া হয়েছে।');
-                }}>
+                  onUpdateStatus(request.id, "en_route");
+                  Alert.alert(
+                    "ধন্যবাদ!",
+                    "আপনার রওনা হওয়ার খবর রোগীর স্বজন ও মেডিকেল টিমে পৌঁছে দেওয়া হয়েছে।",
+                  );
+                }}
+              >
                 <Ionicons name="navigate" size={18} color="#FFFFFF" />
-                <Text style={styles.primaryActionText}>আমি রক্ত দিতে রওনা হচ্ছি (En Route)</Text>
+                <Text style={styles.primaryActionText}>
+                  আমি রক্ত দিতে রওনা হচ্ছি (En Route)
+                </Text>
               </TouchableOpacity>
-            ) : request.userStatus === 'en_route' ? (
+            ) : request.userStatus === "en_route" ? (
               <View style={styles.statusActionRow}>
                 <TouchableOpacity
-                  style={[styles.secondaryActionBtn, { borderColor: theme.primary, backgroundColor: theme.primaryLight }]}
+                  style={[
+                    styles.secondaryActionBtn,
+                    {
+                      borderColor: theme.primary,
+                      backgroundColor: theme.primaryLight,
+                    },
+                  ]}
                   activeOpacity={0.88}
-                  onPress={() => onUpdateStatus(request.id, 'arrived')}>
-                  <Ionicons name="checkmark-circle" size={18} color={theme.primary} />
-                  <Text style={[styles.secondaryActionText, { color: theme.primary }]}>পৌঁছেছি (Arrived)</Text>
+                  onPress={() => onUpdateStatus(request.id, "arrived")}
+                >
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={18}
+                    color={theme.primary}
+                  />
+                  <Text
+                    style={[
+                      styles.secondaryActionText,
+                      { color: theme.primary },
+                    ]}
+                  >
+                    পৌঁছেছি (Arrived)
+                  </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.cancelActionBtn, { borderColor: theme.cardBorder }]}
+                  style={[
+                    styles.cancelActionBtn,
+                    { borderColor: theme.cardBorder },
+                  ]}
                   activeOpacity={0.88}
-                  onPress={() => onUpdateStatus(request.id, 'none')}>
-                  <Ionicons name="close-circle-outline" size={18} color={theme.textSecondary} />
-                  <Text style={[styles.cancelActionText, { color: theme.textSecondary }]}>বাতিল</Text>
+                  onPress={() => onUpdateStatus(request.id, "none")}
+                >
+                  <Text
+                    style={[
+                      styles.cancelActionText,
+                      { color: theme.textSecondary },
+                    ]}
+                  >
+                    বাতিল
+                  </Text>
                 </TouchableOpacity>
               </View>
             ) : (
               <View style={styles.statusActionRow}>
                 <TouchableOpacity
-                  style={[styles.secondaryActionBtn, { backgroundColor: theme.success, borderColor: theme.success }]}
+                  style={[
+                    styles.secondaryActionBtn,
+                    {
+                      backgroundColor: theme.success,
+                      borderColor: theme.success,
+                    },
+                  ]}
                   activeOpacity={0.88}
                   onPress={() => {
-                    onUpdateStatus(request.id, 'donated');
-                    Alert.alert('অভিনন্দন!', 'আপনার মহৎ রক্তদানের জন্য অসংখ্য ধন্যবাদ ও কৃতজ্ঞতা।');
-                  }}>
+                    onUpdateStatus(request.id, "donated");
+                    Alert.alert(
+                      "অভিনন্দন!",
+                      "আপনার মহৎ রক্তদানের জন্য অসংখ্য ধন্যবাদ ও কৃতজ্ঞতা।",
+                    );
+                  }}
+                >
                   <Ionicons name="heart" size={18} color="#FFFFFF" />
-                  <Text style={[styles.secondaryActionText, { color: '#FFFFFF' }]}>রক্তদান সম্পন্ন (Donated)</Text>
+                  <Text
+                    style={[styles.secondaryActionText, { color: "#FFFFFF" }]}
+                  >
+                    রক্তদান সম্পন্ন (Donated)
+                  </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.cancelActionBtn, { borderColor: theme.cardBorder }]}
+                  style={[
+                    styles.cancelActionBtn,
+                    { borderColor: theme.cardBorder },
+                  ]}
                   activeOpacity={0.88}
-                  onPress={() => onUpdateStatus(request.id, 'none')}>
-                  <Text style={[styles.cancelActionText, { color: theme.textSecondary }]}>রিসেট</Text>
+                  onPress={() => onUpdateStatus(request.id, "none")}
+                >
+                  <Text
+                    style={[
+                      styles.cancelActionText,
+                      { color: theme.textSecondary },
+                    ]}
+                  >
+                    রিসেট
+                  </Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -334,49 +526,49 @@ export function RequestTrackingModal({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.65)',
-    justifyContent: 'flex-end',
+    backgroundColor: "rgba(15, 23, 42, 0.65)",
+    justifyContent: "flex-end",
   },
   sheetContainer: {
-    maxHeight: '92%',
+    maxHeight: "92%",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   headerBar: {
     paddingHorizontal: 20,
     paddingTop: 10,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    alignItems: 'center',
+    alignItems: "center",
   },
   dragPill: {
     width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#CBD5E1',
+    backgroundColor: "#CBD5E1",
     marginBottom: 8,
   },
   headerContentRow: {
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   modalTitle: {
     fontSize: 17,
-    fontWeight: '800',
+    fontWeight: "800",
   },
   modalSubtitle: {
     fontSize: 11,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   closeBtn: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   scrollArea: {
     flexGrow: 0,
@@ -392,8 +584,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   summaryTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 12,
   },
   patientInfo: {
@@ -402,15 +594,15 @@ const styles = StyleSheet.create({
   },
   patientName: {
     fontSize: 15,
-    fontWeight: '800',
+    fontWeight: "800",
   },
   hospitalText: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   roomText: {
     fontSize: 11,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   urgencyBadge: {
     paddingHorizontal: 8,
@@ -419,12 +611,12 @@ const styles = StyleSheet.create({
   },
   urgencyText: {
     fontSize: 10,
-    fontWeight: '800',
+    fontWeight: "800",
   },
   contactBox: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 12,
     borderRadius: 12,
   },
@@ -432,43 +624,43 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   roleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
   },
   deptText: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   phoneText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   contactButtons: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
   callBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
     paddingHorizontal: 10,
     height: 30,
     borderRadius: 7,
   },
   callBtnText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 11,
-    fontWeight: '800',
+    fontWeight: "800",
   },
   smsBtn: {
     width: 30,
     height: 30,
     borderRadius: 7,
     borderWidth: 0.8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   timelineCard: {
     padding: 14,
@@ -477,19 +669,19 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: "800",
     marginBottom: 10,
   },
   timelineList: {
     gap: 0,
   },
   timelineItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    alignItems: "flex-start",
     gap: 10,
   },
   timelineIndicator: {
-    alignItems: 'center',
+    alignItems: "center",
     width: 22,
   },
   timelineCircle: {
@@ -497,8 +689,8 @@ const styles = StyleSheet.create({
     height: 18,
     borderRadius: 9,
     borderWidth: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   timelineLine: {
     width: 2,
@@ -512,11 +704,11 @@ const styles = StyleSheet.create({
   },
   stepTitle: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   stepDesc: {
     fontSize: 10,
-    fontWeight: '500',
+    fontWeight: "500",
     lineHeight: 15,
   },
   respondersCard: {
@@ -526,14 +718,14 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   respondersHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   responderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 10,
     borderRadius: 10,
     borderWidth: 1,
@@ -542,43 +734,43 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   respTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
   },
   respName: {
     fontSize: 12,
-    fontWeight: '800',
+    fontWeight: "800",
   },
   respDept: {
     fontSize: 10,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   etaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
     marginTop: 2,
   },
   etaText: {
     fontSize: 10,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   respCallBtn: {
     width: 30,
     height: 30,
     borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   emptyResponders: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: 14,
     gap: 6,
   },
   emptyText: {
     fontSize: 11,
-    textAlign: 'center',
+    textAlign: "center",
     maxWidth: 240,
   },
   footerBar: {
@@ -587,28 +779,28 @@ const styles = StyleSheet.create({
     borderTopWidth: 0.8,
   },
   primaryActionBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 6,
     height: 38,
     borderRadius: 10,
   },
   primaryActionText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 12,
-    fontWeight: '800',
+    fontWeight: "800",
   },
   statusActionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
   secondaryActionBtn: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 5,
     height: 36,
     borderRadius: 9,
@@ -616,18 +808,18 @@ const styles = StyleSheet.create({
   },
   secondaryActionText: {
     fontSize: 12,
-    fontWeight: '800',
+    fontWeight: "800",
   },
   cancelActionBtn: {
     paddingHorizontal: 14,
     height: 36,
     borderRadius: 9,
     borderWidth: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   cancelActionText: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: "700",
   },
 });

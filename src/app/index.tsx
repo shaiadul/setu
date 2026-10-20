@@ -560,7 +560,7 @@ export default function FeedScreen() {
   return (
     <View style={styles.screen}>
       <CampusHeader
-        title="সেতু • রক্তের ফিড"
+        title="সেতু • রক্তের বন্ধন"
         subtitle="জাহাঙ্গীরনগর বিশ্ববিদ্যালয় ডোনার নেটওয়ার্ক"
       />
 

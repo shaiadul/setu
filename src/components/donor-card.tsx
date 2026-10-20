@@ -43,7 +43,7 @@ export function DonorCard({ donor }: DonorCardProps) {
     <View style={[styles.card, { backgroundColor: '#FFFFFF', borderColor: '#E2E8F0' }]}>
       {/* Header Info */}
       <View style={styles.cardHeader}>
-        <BloodGroupBadge bloodType={donor.bloodType} size="sm" highlightUniversal />
+        <BloodGroupBadge bloodType={donor.bloodType} size="sm" />
 
         <View style={styles.metaCol}>
           <View style={styles.nameRow}>
@@ -88,8 +88,7 @@ export function DonorCard({ donor }: DonorCardProps) {
             style={styles.callBtn}
             activeOpacity={0.8}
             onPress={handleCall}>
-            <Ionicons name="call" size={12} color="#FFFFFF" />
-            <Text style={styles.callBtnText}>কল</Text>
+            <Ionicons name="call" size={13} color="#FFFFFF" />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -193,19 +192,12 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   callBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#DC2626',
-    paddingHorizontal: 10,
+    width: 28,
     height: 28,
     borderRadius: 7,
+    backgroundColor: '#DC2626',
     justifyContent: 'center',
-  },
-  callBtnText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#FFFFFF',
+    alignItems: 'center',
   },
   smsBtn: {
     width: 28,

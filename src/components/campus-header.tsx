@@ -16,8 +16,8 @@ interface CampusHeaderProps {
 }
 
 export function CampusHeader({
-  title,
-  subtitle,
+  title = 'সেতু • রক্তের ফিড',
+  subtitle = 'জাহাঙ্গীরনগর বিশ্ববিদ্যালয় ডোনার নেটওয়ার্ক',
   showBack,
   onBack,
   hideIcons,
@@ -63,7 +63,7 @@ export function CampusHeader({
               )}
             </View>
           </View>
-        ) : title ? (
+        ) : (
           <View style={styles.titleCol}>
             <View style={styles.titleBadgeRow}>
               <Text style={styles.screenTitle} numberOfLines={1}>
@@ -71,7 +71,7 @@ export function CampusHeader({
               </Text>
               <View style={styles.livePill}>
                 <View style={styles.liveDot} />
-                <Text style={styles.liveText}>JU LIVE</Text>
+                <Text style={styles.liveText}>লাইভ</Text>
               </View>
             </View>
             {subtitle && (
@@ -79,19 +79,6 @@ export function CampusHeader({
                 {subtitle}
               </Text>
             )}
-          </View>
-        ) : (
-          <View style={styles.brandCol}>
-            <View style={styles.logoRow}>
-              <Text style={styles.appName}>সেতু</Text>
-              <View style={styles.livePill}>
-                <View style={styles.liveDot} />
-                <Text style={styles.liveText}>লাইভ</Text>
-              </View>
-            </View>
-            <Text style={styles.campusSubtitle} numberOfLines={1}>
-              {subtitle ?? 'জাহাঙ্গীরনগর বিশ্ববিদ্যালয় ডোনার নেটওয়ার্ক'}
-            </Text>
           </View>
         )}
 
@@ -152,48 +139,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  brandCol: {
-    gap: 2,
-    flex: 1,
-  },
-  logoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-  },
-  appName: {
-    fontSize: 22,
-    fontWeight: '900',
-    color: '#FFFFFF',
-    letterSpacing: 0.5,
-  },
-  livePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 8,
-  },
-  liveDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
-    backgroundColor: '#4ADE80',
-  },
-  liveText: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    letterSpacing: 0.5,
-  },
-  campusSubtitle: {
-    fontSize: 11,
-    fontWeight: '500',
-    color: 'rgba(255, 255, 255, 0.85)',
-    letterSpacing: -0.1,
-  },
   backTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -219,6 +164,27 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '500',
     color: 'rgba(255, 255, 255, 0.82)',
+  },
+  livePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  liveDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: '#4ADE80',
+  },
+  liveText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
   },
   actionsRow: {
     flexDirection: 'row',

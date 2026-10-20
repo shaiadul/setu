@@ -1,10 +1,9 @@
-import React, { useEffect, useRef } from 'react';
-import { Animated, Platform, StyleSheet, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useTheme } from '@/hooks/use-theme';
 import { useBlood } from '@/context/blood-context';
 
 interface TabIconProps {
@@ -16,107 +15,113 @@ interface TabIconProps {
   size?: number;
 }
 
-function AnimatedTabIcon({
+function TabIcon({
   focused,
   color,
   iconType,
   activeName,
   inactiveName,
-  size = 21,
+  size = 20,
 }: TabIconProps) {
-  const scaleAnim = useRef(new Animated.Value(focused ? 1 : 0.8)).current;
-  const opacityAnim = useRef(new Animated.Value(focused ? 1 : 0)).current;
-  const iconScaleAnim = useRef(new Animated.Value(focused ? 1.08 : 1.0)).current;
+  const scaleAnim = useRef(new Animated.Value(focused ? 1.05 : 1.0)).current;
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.spring(scaleAnim, {
-        toValue: focused ? 1 : 0.8,
-        friction: 6,
-        tension: 140,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacityAnim, {
-        toValue: focused ? 1 : 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.spring(iconScaleAnim, {
-        toValue: focused ? 1.08 : 1.0,
-        friction: 6,
-        tension: 140,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [focused, scaleAnim, opacityAnim, iconScaleAnim]);
+    Animated.spring(scaleAnim, {
+      toValue: focused ? 1.05 : 1.0,
+      friction: 7,
+      tension: 160,
+      useNativeDriver: true,
+    }).start();
+  }, [focused, scaleAnim]);
 
   return (
-    <View style={styles.iconContainer}>
-      {/* Smooth animated active pill background */}
-      <Animated.View
-        style={[
-          styles.activePill,
-          {
-            opacity: opacityAnim,
-            transform: [{ scale: scaleAnim }],
-          },
-        ]}
-      />
+    <Animated.View style={[styles.iconWrap, { transform: [{ scale: scaleAnim }] }]}>
+      {iconType === 'ionicons' ? (
+        <Ionicons
+          name={(focused ? activeName : inactiveName) as any}
+          size={size}
+          color={color}
+        />
+      ) : (
+        <MaterialCommunityIcons
+          name={(focused ? activeName : inactiveName) as any}
+          size={size}
+          color={color}
+        />
+      )}
+    </Animated.View>
+  );
+}
 
-      {/* Animated icon */}
-      <Animated.View style={{ transform: [{ scale: iconScaleAnim }] }}>
-        {iconType === 'ionicons' ? (
-          <Ionicons
-            name={(focused ? activeName : inactiveName) as any}
-            size={size}
-            color={color}
-          />
-        ) : (
-          <MaterialCommunityIcons
-            name={(focused ? activeName : inactiveName) as any}
-            size={size}
-            color={color}
-          />
-        )}
-      </Animated.View>
-    </View>
+function CustomTabBarButton({
+  children,
+  style,
+  onPress,
+  onLongPress,
+  accessibilityState,
+  ...rest
+}: any) {
+  const [isHovered, setIsHovered] = useState(false);
+  const isSelected = accessibilityState?.selected;
+
+  return (
+    <Pressable
+      {...rest}
+      onPress={onPress}
+      onLongPress={onLongPress}
+      accessibilityState={accessibilityState}
+      onHoverIn={() => setIsHovered(true)}
+      onHoverOut={() => setIsHovered(false)}
+      style={[style, styles.tabBarButton]}>
+      <View
+        style={[
+          styles.tabItemContainer,
+          isSelected && styles.tabItemActive,
+          isHovered && !isSelected && styles.tabItemHover,
+        ]}>
+        {/* Subtle active indicator accent at top */}
+        {isSelected && <View style={styles.activeTopAccent} />}
+        {children}
+      </View>
+    </Pressable>
   );
 }
 
 export default function AppTabs() {
-  const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { requests } = useBlood();
 
   const codeRedCount = requests.filter(r => r.urgency === 'Code Red').length;
 
   const bottomInset = Math.max(insets.bottom, Platform.OS === 'android' ? 6 : 4);
-  const tabHeight = 54 + bottomInset;
+  const tabHeight = 48 + bottomInset;
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: '#DC2626',
-        tabBarInactiveTintColor: '#94A3B8',
+        tabBarInactiveTintColor: '#64748B',
+        tabBarButton: props => <CustomTabBarButton {...props} />,
         tabBarStyle: {
           backgroundColor: '#FFFFFF',
           borderTopColor: '#E2E8F0',
-          borderTopWidth: 0.8,
+          borderTopWidth: 0.6,
           height: tabHeight,
           paddingBottom: bottomInset,
-          paddingTop: 5,
-          elevation: 16,
+          paddingTop: 2,
+          paddingHorizontal: 8,
+          elevation: 8,
           shadowColor: '#0F172A',
-          shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.06,
-          shadowRadius: 12,
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.04,
+          shadowRadius: 8,
         },
         tabBarLabelStyle: {
           fontSize: 10,
           fontWeight: '700',
           letterSpacing: -0.1,
-          marginTop: 2,
+          marginTop: 1,
         },
       }}>
       <Tabs.Screen
@@ -127,21 +132,22 @@ export default function AppTabs() {
           tabBarBadgeStyle: {
             backgroundColor: '#DC2626',
             color: '#FFFFFF',
-            fontSize: 9,
+            fontSize: 8,
             fontWeight: '900',
-            minWidth: 16,
-            height: 16,
-            borderRadius: 8,
-            lineHeight: 15,
+            minWidth: 14,
+            height: 14,
+            borderRadius: 7,
+            lineHeight: 13,
+            top: 2,
           },
           tabBarIcon: ({ color, focused }) => (
-            <AnimatedTabIcon
+            <TabIcon
               focused={focused}
               color={color}
               iconType="ionicons"
               activeName="pulse"
               inactiveName="pulse-outline"
-              size={21}
+              size={19}
             />
           ),
         }}
@@ -151,13 +157,13 @@ export default function AppTabs() {
         options={{
           title: 'অনুরোধ',
           tabBarIcon: ({ color, focused }) => (
-            <AnimatedTabIcon
+            <TabIcon
               focused={focused}
               color={color}
               iconType="material"
               activeName="plus-circle"
               inactiveName="plus-circle-outline"
-              size={22}
+              size={20}
             />
           ),
         }}
@@ -167,13 +173,13 @@ export default function AppTabs() {
         options={{
           title: 'ডোনার',
           tabBarIcon: ({ color, focused }) => (
-            <AnimatedTabIcon
+            <TabIcon
               focused={focused}
               color={color}
               iconType="ionicons"
               activeName="people"
               inactiveName="people-outline"
-              size={21}
+              size={19}
             />
           ),
         }}
@@ -183,13 +189,13 @@ export default function AppTabs() {
         options={{
           title: 'প্রোফাইল',
           tabBarIcon: ({ color, focused }) => (
-            <AnimatedTabIcon
+            <TabIcon
               focused={focused}
               color={color}
               iconType="ionicons"
               activeName="person-circle"
               inactiveName="person-circle-outline"
-              size={22}
+              size={20}
             />
           ),
         }}
@@ -199,18 +205,45 @@ export default function AppTabs() {
 }
 
 const styles = StyleSheet.create({
-  iconContainer: {
-    width: 48,
-    height: 28,
+  tabBarButton: {
+    flex: 1,
+    paddingVertical: 2,
+    paddingHorizontal: 3,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  tabItemContainer: {
+    width: '100%',
+    height: 42,
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
+    backgroundColor: 'transparent',
+    ...Platform.select({
+      web: {
+        transition: 'background-color 0.15s ease',
+        cursor: 'pointer',
+      },
+    }),
   },
-  activePill: {
+  tabItemActive: {
+    backgroundColor: '#FEF2F2',
+  },
+  tabItemHover: {
+    backgroundColor: '#F8FAFC',
+  },
+  activeTopAccent: {
     position: 'absolute',
-    width: 46,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: 'rgba(220, 38, 38, 0.1)',
+    top: 0,
+    width: 20,
+    height: 2.5,
+    borderRadius: 1.5,
+    backgroundColor: '#DC2626',
+  },
+  iconWrap: {
+    marginBottom: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

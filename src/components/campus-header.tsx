@@ -22,51 +22,46 @@ export function CampusHeader({ title, subtitle }: CampusHeaderProps) {
     <View
       style={[
         styles.headerContainer,
-        {
-          paddingTop: Math.max(insets.top, 12),
-          backgroundColor: theme.card,
-          borderBottomColor: theme.cardBorder,
-        },
+        { paddingTop: Math.max(insets.top, 12) + 2 },
       ]}>
+      {/* Gradient-like layered background */}
+      <View style={styles.bgLayer} />
+
       <View style={styles.contentRow}>
-        {/* Brand & Ticker */}
+        {/* Brand */}
         <View style={styles.brandColumn}>
           <View style={styles.logoRow}>
-            <View style={[styles.logoIcon, { backgroundColor: theme.primary }]}>
-              <MaterialCommunityIcons name="water" size={17} color="#FFFFFF" />
+            <View style={styles.logoIcon}>
+              <MaterialCommunityIcons name="water" size={14} color="#FFFFFF" />
             </View>
-            <Text style={[styles.appName, { color: theme.text }]}>সেতু</Text>
-            <View style={[styles.statusDot, { backgroundColor: theme.primary }]} />
-            <Text style={[styles.brandSub, { color: theme.primary }]}>SETU • JU</Text>
+            <Text style={styles.appName}>সেতু</Text>
+            <View style={styles.livePill}>
+              <View style={styles.liveDot} />
+              <Text style={styles.liveText}>LIVE</Text>
+            </View>
           </View>
-          <Text style={[styles.campusStatus, { color: theme.textSecondary }]}>
-            {subtitle ?? `জাহাঙ্গীরনগর বিশ্ববিদ্যালয় • ${codeRedCount} টি জরুরি কোড রেড`}
+          <Text style={styles.campusStatus} numberOfLines={1}>
+            {subtitle ?? `জাহাঙ্গীরনগর বিশ্ববিদ্যালয় • ${codeRedCount} কোড রেড`}
           </Text>
         </View>
 
-        {/* Action Buttons */}
+        {/* Actions */}
         <View style={styles.actionsRow}>
-          {/* 3-Slider Onboarding Re-trigger */}
           <TouchableOpacity
-            style={[
-              styles.infoBtn,
-              { backgroundColor: theme.primaryContainer, borderColor: theme.primaryLight },
-            ]}
-            activeOpacity={0.8}
+            style={styles.headerIconBtn}
+            activeOpacity={0.7}
             onPress={() => setShowSplash(true)}>
-            <Ionicons name="sparkles" size={14} color={theme.primary} />
-            <Text style={[styles.infoBtnText, { color: theme.primary }]}>পরিচিতি</Text>
+            <Ionicons name="information-circle-outline" size={20} color="rgba(255,255,255,0.85)" />
           </TouchableOpacity>
 
-          {/* Alert pill */}
-          <View style={[styles.alertBadge, { backgroundColor: theme.backgroundElement }]}>
-            <Ionicons name="notifications-outline" size={18} color={theme.text} />
+          <TouchableOpacity style={styles.headerIconBtn} activeOpacity={0.7}>
+            <Ionicons name="notifications-outline" size={19} color="rgba(255,255,255,0.85)" />
             {codeRedCount > 0 && (
-              <View style={[styles.badgeNumber, { backgroundColor: theme.primary }]}>
+              <View style={styles.badgeDot}>
                 <Text style={styles.badgeText}>{codeRedCount}</Text>
               </View>
             )}
-          </View>
+          </TouchableOpacity>
         </View>
       </View>
     </View>
@@ -75,9 +70,16 @@ export function CampusHeader({ title, subtitle }: CampusHeaderProps) {
 
 const styles = StyleSheet.create({
   headerContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
+    backgroundColor: '#DC2626',
+    paddingHorizontal: 18,
+    paddingBottom: 14,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  bgLayer: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#DC2626',
+    opacity: 1,
   },
   contentRow: {
     flexDirection: 'row',
@@ -85,7 +87,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   brandColumn: {
-    gap: 2,
+    gap: 3,
+    flex: 1,
   },
   logoRow: {
     flexDirection: 'row',
@@ -93,71 +96,75 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   logoIcon: {
-    width: 28,
-    height: 28,
+    width: 26,
+    height: 26,
     borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   appName: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '900',
-    letterSpacing: 0.2,
+    color: '#FFFFFF',
+    letterSpacing: 0.3,
   },
-  statusDot: {
+  livePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  liveDot: {
     width: 5,
     height: 5,
     borderRadius: 2.5,
+    backgroundColor: '#4ADE80',
   },
-  brandSub: {
-    fontSize: 12,
+  liveText: {
+    fontSize: 9,
     fontWeight: '800',
-    letterSpacing: 0.5,
+    color: 'rgba(255,255,255,0.9)',
+    letterSpacing: 0.8,
   },
   campusStatus: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '500',
+    color: 'rgba(255,255,255,0.7)',
+    letterSpacing: -0.1,
   },
   actionsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-  },
-  infoBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
     gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 14,
-    borderWidth: 1,
   },
-  infoBtnText: {
-    fontSize: 11,
-    fontWeight: '800',
-  },
-  alertBadge: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+  headerIconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.12)',
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
   },
-  badgeNumber: {
+  badgeDot: {
     position: 'absolute',
-    top: 2,
-    right: 2,
-    minWidth: 16,
-    height: 16,
-    borderRadius: 8,
+    top: 4,
+    right: 4,
+    minWidth: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#FDE047',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 3,
+    paddingHorizontal: 2,
   },
   badgeText: {
-    color: '#FFFFFF',
-    fontSize: 9,
-    fontWeight: '800',
+    color: '#92400E',
+    fontSize: 8,
+    fontWeight: '900',
   },
 });

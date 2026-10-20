@@ -17,6 +17,8 @@ import { CampusHeader } from '@/components/campus-header';
 import { DonorCard } from '@/components/donor-card';
 import { useBlood } from '@/context/blood-context';
 import { BloodDrive, BloodGroup, JuRole } from '@/types/blood';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BrandGradient } from '@/constants/theme';
 
 const BLOOD_GROUPS: BloodGroup[] = ['O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+'];
 
@@ -84,7 +86,7 @@ export default function DirectoryAndDrivesScreen() {
         <View style={styles.driveHeader}>
           <View style={styles.driveHeaderLeft}>
             <View style={styles.datePill}>
-              <Ionicons name="calendar-outline" size={11} color="#DC2626" />
+              <Ionicons name="calendar-outline" size={11} color="#BE123C" />
               <Text style={styles.dateText}>{item.date}</Text>
             </View>
             <Text style={styles.timeText}>{item.time}</Text>
@@ -102,7 +104,7 @@ export default function DirectoryAndDrivesScreen() {
 
         <View style={styles.venueBox}>
           <View style={styles.venueRow}>
-            <Ionicons name="location-outline" size={12} color="#DC2626" />
+            <Ionicons name="location-outline" size={12} color="#BE123C" />
             <Text style={styles.venueText}>{item.venue}</Text>
           </View>
           <View style={styles.venueRow}>
@@ -125,7 +127,7 @@ export default function DirectoryAndDrivesScreen() {
                 styles.progressBar,
                 {
                   width: `${bookedPercent}%`,
-                  backgroundColor: bookedPercent > 80 ? '#DC2626' : '#0284C7',
+                  backgroundColor: bookedPercent > 80 ? '#BE123C' : '#0284C7',
                 },
               ]}
             />
@@ -136,22 +138,37 @@ export default function DirectoryAndDrivesScreen() {
         <TouchableOpacity
           style={[
             styles.bookBtn,
-            item.isBooked ? styles.bookBtnCancel : styles.bookBtnActive,
+            item.isBooked && styles.bookBtnCancel,
           ]}
           activeOpacity={0.88}
           onPress={() => handleBooking(item)}>
-          <Ionicons
-            name={item.isBooked ? 'close-circle-outline' : 'calendar-outline'}
-            size={14}
-            color={item.isBooked ? '#64748B' : '#FFFFFF'}
-          />
-          <Text
-            style={[
-              styles.bookBtnText,
-              { color: item.isBooked ? '#64748B' : '#FFFFFF' },
-            ]}>
-            {item.isBooked ? 'স্লট বাতিল করুন' : 'রক্তদানের স্লট বুক করুন'}
-          </Text>
+          {!item.isBooked ? (
+            <LinearGradient
+              colors={BrandGradient.colors}
+              start={BrandGradient.start}
+              end={BrandGradient.end}
+              style={styles.bookBtnGradient}>
+              <Ionicons
+                name="calendar-outline"
+                size={14}
+                color="#FFFFFF"
+              />
+              <Text style={styles.bookBtnTextGradient}>
+                রক্তদানের স্লট বুক করুন
+              </Text>
+            </LinearGradient>
+          ) : (
+            <View style={styles.bookBtnCancelInner}>
+              <Ionicons
+                name="close-circle-outline"
+                size={14}
+                color="#64748B"
+              />
+              <Text style={[styles.bookBtnText, { color: '#64748B' }]}>
+                স্লট বাতিল করুন
+              </Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
     );
@@ -177,12 +194,12 @@ export default function DirectoryAndDrivesScreen() {
             <Ionicons
               name="people"
               size={13}
-              color={activeTab === 'donors' ? '#DC2626' : '#64748B'}
+              color={activeTab === 'donors' ? '#BE123C' : '#64748B'}
             />
             <Text
               style={[
                 styles.segmentText,
-                { color: activeTab === 'donors' ? '#DC2626' : '#64748B' },
+                { color: activeTab === 'donors' ? '#BE123C' : '#64748B' },
               ]}>
               রক্তদাতা তালিকা ({donors.length})
             </Text>
@@ -198,12 +215,12 @@ export default function DirectoryAndDrivesScreen() {
             <Ionicons
               name="calendar"
               size={13}
-              color={activeTab === 'drives' ? '#DC2626' : '#64748B'}
+              color={activeTab === 'drives' ? '#BE123C' : '#64748B'}
             />
             <Text
               style={[
                 styles.segmentText,
-                { color: activeTab === 'drives' ? '#DC2626' : '#64748B' },
+                { color: activeTab === 'drives' ? '#BE123C' : '#64748B' },
               ]}>
               ক্যাম্পাস ক্যাম্প ({drives.length})
             </Text>
@@ -335,11 +352,17 @@ export default function DirectoryAndDrivesScreen() {
                 </Text>
                 {isFiltered && (
                   <TouchableOpacity
-                    style={styles.emptyResetBtn}
+                    style={styles.emptyResetBtnTouch}
                     onPress={resetDonorFilters}
-                    activeOpacity={0.8}>
-                    <Ionicons name="refresh" size={13} color="#FFFFFF" />
-                    <Text style={styles.emptyResetBtnText}>সকল রক্তদাতা দেখুন</Text>
+                    activeOpacity={0.85}>
+                    <LinearGradient
+                      colors={BrandGradient.colors}
+                      start={BrandGradient.start}
+                      end={BrandGradient.end}
+                      style={styles.emptyResetBtnGradient}>
+                      <Ionicons name="refresh" size={13} color="#FFFFFF" />
+                      <Text style={styles.emptyResetBtnText}>সকল রক্তদাতা দেখুন</Text>
+                    </LinearGradient>
                   </TouchableOpacity>
                 )}
               </View>
@@ -464,8 +487,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   bloodChipActive: {
-    backgroundColor: '#DC2626',
-    borderColor: '#DC2626',
+    backgroundColor: '#BE123C',
+    borderColor: '#BE123C',
   },
   bloodChipText: {
     fontSize: 10,
@@ -517,7 +540,7 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#DC2626',
+    color: '#BE123C',
   },
   timeText: {
     fontSize: 10,
@@ -581,7 +604,7 @@ const styles = StyleSheet.create({
   capacityValue: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#DC2626',
+    color: '#BE123C',
   },
   progressTrack: {
     height: 5,
@@ -594,20 +617,33 @@ const styles = StyleSheet.create({
     borderRadius: 2.5,
   },
   bookBtn: {
+    height: 34,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  bookBtnGradient: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 5,
-    height: 32,
-    borderRadius: 7,
+    gap: 6,
   },
-  bookBtnActive: {
-    backgroundColor: '#DC2626',
+  bookBtnTextGradient: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#FFFFFF',
   },
   bookBtnCancel: {
     backgroundColor: '#F1F5F9',
     borderWidth: 0.8,
     borderColor: '#E2E8F0',
+  },
+  bookBtnCancelInner: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
   },
   bookBtnText: {
     fontSize: 11,
@@ -639,15 +675,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  emptyResetBtn: {
+  emptyResetBtnTouch: {
+    borderRadius: 17,
+    overflow: 'hidden',
+    shadowColor: '#881337',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.28,
+    shadowRadius: 6,
+    elevation: 3,
+    marginTop: 6,
+  },
+  emptyResetBtnGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: '#DC2626',
-    paddingHorizontal: 14,
-    height: 34,
+    paddingHorizontal: 16,
+    height: 36,
     borderRadius: 17,
-    marginTop: 6,
   },
   emptyResetBtnText: {
     fontSize: 11,

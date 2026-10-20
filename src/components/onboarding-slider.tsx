@@ -12,7 +12,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/hooks/use-theme';
+import { BrandGradient } from '@/constants/theme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -108,9 +110,13 @@ export function OnboardingSlider({ visible, onFinish }: OnboardingSliderProps) {
           <MaterialCommunityIcons name={item.iconName} size={54} color={theme.primary} />
         </View>
 
-        <View style={[styles.categoryPill, { backgroundColor: theme.primary }]}>
+        <LinearGradient
+          colors={BrandGradient.colors}
+          start={BrandGradient.start}
+          end={BrandGradient.end}
+          style={styles.categoryPill}>
           <Text style={styles.categoryPillText}>{item.badge}</Text>
-        </View>
+        </LinearGradient>
       </View>
 
       {/* Typography Content */}
@@ -149,9 +155,13 @@ export function OnboardingSlider({ visible, onFinish }: OnboardingSliderProps) {
         <View style={styles.topHeader}>
           {/* Brand Logo & Name */}
           <View style={styles.logoRow}>
-            <View style={[styles.logoBadge, { backgroundColor: theme.primary }]}>
+            <LinearGradient
+              colors={BrandGradient.colors}
+              start={BrandGradient.start}
+              end={BrandGradient.end}
+              style={styles.logoBadge}>
               <MaterialCommunityIcons name="water" size={18} color="#FFFFFF" />
-            </View>
+            </LinearGradient>
             <View>
               <Text style={[styles.brandBn, { color: theme.primary }]}>সেতু</Text>
               <Text style={[styles.brandSub, { color: theme.textSecondary }]}>JU Blood Bridge</Text>
@@ -215,17 +225,23 @@ export function OnboardingSlider({ visible, onFinish }: OnboardingSliderProps) {
             )}
 
             <TouchableOpacity
-              style={[styles.nextBtn, { backgroundColor: theme.primary }]}
+              style={styles.nextBtnTouch}
               activeOpacity={0.88}
               onPress={handleNext}>
-              <Text style={styles.nextBtnText}>
-                {currentIndex === SLIDES.length - 1 ? 'সেতুতে প্রবেশ করুন' : 'পরবর্তী ধাপ'}
-              </Text>
-              <Ionicons
-                name={currentIndex === SLIDES.length - 1 ? 'checkmark-circle' : 'arrow-forward'}
-                size={16}
-                color="#FFFFFF"
-              />
+              <LinearGradient
+                colors={BrandGradient.colors}
+                start={BrandGradient.start}
+                end={BrandGradient.end}
+                style={styles.nextBtn}>
+                <Text style={styles.nextBtnText}>
+                  {currentIndex === SLIDES.length - 1 ? 'সেতুতে প্রবেশ করুন' : 'পরবর্তী ধাপ'}
+                </Text>
+                <Ionicons
+                  name={currentIndex === SLIDES.length - 1 ? 'checkmark-circle' : 'arrow-forward'}
+                  size={16}
+                  color="#FFFFFF"
+                />
+              </LinearGradient>
             </TouchableOpacity>
           </View>
         </View>
@@ -304,7 +320,7 @@ const styles = StyleSheet.create({
     borderRadius: 45,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#DC2626',
+    shadowColor: '#881337',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.15,
     shadowRadius: 12,
@@ -405,6 +421,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
   },
+  nextBtnTouch: {
+    flex: 1,
+    borderRadius: 10,
+    overflow: 'hidden',
+    shadowColor: '#881337',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 3,
+  },
   nextBtn: {
     flex: 1,
     flexDirection: 'row',
@@ -413,11 +439,6 @@ const styles = StyleSheet.create({
     gap: 6,
     height: 40,
     borderRadius: 10,
-    shadowColor: '#DC2626',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 3,
   },
   nextBtnText: {
     color: '#FFFFFF',

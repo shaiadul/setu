@@ -7,6 +7,14 @@ import '@/global.css';
 
 import { Platform } from 'react-native';
 
+export const BrandGradient = {
+  colors: ['#881337', '#BE123C', '#E11D48'] as const,
+  start: { x: 0.1, y: 0 },
+  end: { x: 0.9, y: 1 },
+} as const;
+
+export const PrimaryGradient = ['#881337', '#BE123C', '#E11D48'] as const;
+
 export const Colors = {
   light: {
     text: '#0F172A',
@@ -14,14 +22,14 @@ export const Colors = {
     background: '#F8FAFC',
     backgroundElement: '#F1F5F9',
     backgroundSelected: '#E2E8F0',
-    primary: '#DC2626',
-    primaryDark: '#B70011',
-    primaryLight: '#FEE2E2',
-    primaryContainer: '#FEF2F2',
+    primary: '#BE123C',
+    primaryDark: '#881337',
+    primaryLight: '#FFE4E6',
+    primaryContainer: '#FFF1F2',
     secondary: '#0284C7',
     secondaryLight: '#E0F2FE',
     secondaryDark: '#0369A1',
-    accent: '#EF4444',
+    accent: '#E11D48',
     card: '#FFFFFF',
     cardBorder: '#E2E8F0',
     success: '#16A34A',
@@ -35,14 +43,14 @@ export const Colors = {
     background: '#0B1120',
     backgroundElement: '#1E293B',
     backgroundSelected: '#334155',
-    primary: '#EF4444',
-    primaryDark: '#DC2626',
-    primaryLight: '#451214',
-    primaryContainer: '#2D1517',
+    primary: '#E11D48',
+    primaryDark: '#BE123C',
+    primaryLight: '#4C0519',
+    primaryContainer: '#2D060F',
     secondary: '#38BDF8',
     secondaryLight: '#082F49',
     secondaryDark: '#0284C7',
-    accent: '#F87171',
+    accent: '#FB7185',
     card: '#131D31',
     cardBorder: '#23324A',
     success: '#22C55E',

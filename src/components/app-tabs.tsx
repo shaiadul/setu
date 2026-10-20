@@ -100,7 +100,7 @@ export default function AppTabs() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#DC2626',
+        tabBarActiveTintColor: '#BE123C',
         tabBarInactiveTintColor: '#64748B',
         tabBarButton: props => <CustomTabBarButton {...props} />,
         tabBarStyle: {
@@ -130,7 +130,7 @@ export default function AppTabs() {
           title: 'ফিড',
           tabBarBadge: codeRedCount > 0 ? codeRedCount : undefined,
           tabBarBadgeStyle: {
-            backgroundColor: '#DC2626',
+            backgroundColor: '#BE123C',
             color: '#FFFFFF',
             fontSize: 8,
             fontWeight: '900',
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
     }),
   },
   tabItemActive: {
-    backgroundColor: '#FEF2F2',
+    backgroundColor: '#FFF1F2',
   },
   tabItemHover: {
     backgroundColor: '#F8FAFC',
@@ -255,10 +255,10 @@ const styles = StyleSheet.create({
   activeTopAccent: {
     position: 'absolute',
     top: 0,
-    width: 20,
-    height: 2.5,
+    width: 22,
+    height: 3,
     borderRadius: 1.5,
-    backgroundColor: '#DC2626',
+    backgroundColor: '#BE123C',
   },
   iconWrap: {
     marginBottom: 1,

@@ -19,6 +19,8 @@ import { CampusHeader } from "@/components/campus-header";
 import { useBlood } from "@/context/blood-context";
 import { JuRole } from "@/types/blood";
 import { router } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
+import { BrandGradient } from "@/constants/theme";
 
 interface BadgeItem {
   id: string;
@@ -40,7 +42,7 @@ const PRESTIGE_BADGES: BadgeItem[] = [
     category: "মাইলফলক",
     desc: "জাহাঙ্গীরনগর বিশ্ববিদ্যালয়ে প্রথমবারের মতো জরুরি রক্তদান সম্পন্ন করেছেন।",
     icon: "water",
-    color: "#DC2626",
+    color: "#BE123C",
     bg: "#FEF2F2",
     unlocked: true,
     date: "১২ আগস্ট ২০২২",
@@ -208,7 +210,7 @@ export default function ProfileScreen() {
       <Switch
         value={value}
         onValueChange={onValueChange}
-        trackColor={{ false: "#E2E8F0", true: "#DC2626" }}
+        trackColor={{ false: "#E2E8F0", true: "#BE123C" }}
         thumbColor={Platform.OS === "android" ? "#FFFFFF" : undefined}
       />
     </View>
@@ -233,9 +235,14 @@ export default function ProfileScreen() {
         {/* ========================================================= */}
         <View style={styles.heroSection}>
           <View style={styles.heroTopRow}>
-            {/* Avatar with Status Aura */}
+            {/* Avatar with Status Aura & Brand Gradient */}
             <View style={styles.avatarWrap}>
-              <View style={styles.avatarCircle}>
+              <LinearGradient
+                colors={BrandGradient.colors}
+                start={BrandGradient.start}
+                end={BrandGradient.end}
+                style={styles.avatarCircle}
+              >
                 <Text style={styles.avatarText}>
                   {profile.name
                     .split(" ")
@@ -244,7 +251,7 @@ export default function ProfileScreen() {
                     .slice(0, 2)
                     .toUpperCase()}
                 </Text>
-              </View>
+              </LinearGradient>
               <View style={styles.activePulseRing}>
                 <View style={styles.activeDot} />
               </View>
@@ -266,12 +273,17 @@ export default function ProfileScreen() {
               </Text>
             </View>
 
-            {/* Blood Badge */}
-            <View style={styles.bloodHexBadge}>
+            {/* Blood Badge with Brand Gradient */}
+            <LinearGradient
+              colors={BrandGradient.colors}
+              start={BrandGradient.start}
+              end={BrandGradient.end}
+              style={styles.bloodHexBadge}
+            >
               <MaterialCommunityIcons name="water" size={13} color="#FFFFFF" />
               <Text style={styles.bloodHexText}>{profile.bloodType}</Text>
               <Text style={styles.bloodHexRh}>{profile.rhFactor}</Text>
-            </View>
+            </LinearGradient>
           </View>
 
           {/* Quick Action Pill Bar */}
@@ -288,7 +300,7 @@ export default function ProfileScreen() {
               activeOpacity={0.8}
               onPress={() => setQrModalVisible(true)}
             >
-              <Ionicons name="qr-code" size={12} color="#DC2626" />
+              <Ionicons name="qr-code" size={12} color="#BE123C" />
               <Text style={styles.qrPassPillText}>QR</Text>
             </TouchableOpacity>
 
@@ -297,7 +309,7 @@ export default function ProfileScreen() {
               activeOpacity={0.8}
               onPress={handleEditProfilePress}
             >
-              <Ionicons name="create-outline" size={12} color="#DC2626" />
+              <Ionicons name="create-outline" size={12} color="#BE123C" />
               <Text style={styles.qrPassPillText}>Edit</Text>
             </TouchableOpacity>
 
@@ -327,7 +339,7 @@ export default function ProfileScreen() {
             <Ionicons
               name="analytics"
               size={13}
-              color={activeTab === "showcase" ? "#DC2626" : "#64748B"}
+              color={activeTab === "showcase" ? "#BE123C" : "#64748B"}
             />
             <Text
               style={[
@@ -350,7 +362,7 @@ export default function ProfileScreen() {
             <Ionicons
               name="options"
               size={13}
-              color={activeTab === "settings" ? "#DC2626" : "#64748B"}
+              color={activeTab === "settings" ? "#BE123C" : "#64748B"}
             />
             <Text
               style={[
@@ -375,7 +387,7 @@ export default function ProfileScreen() {
                   <MaterialCommunityIcons
                     name="heart-pulse"
                     size={16}
-                    color="#DC2626"
+                    color="#BE123C"
                   />
                   <Text style={styles.surfaceTitle}>
                     রক্তদান প্রস্তুতি ও রিকভারি টাইমলাইন
@@ -503,7 +515,7 @@ export default function ProfileScreen() {
               {/* Four Flowing Impact Counters (No Box-in-Box) */}
               <View style={styles.impactFlowRow}>
                 <View style={styles.impactFlowItem}>
-                  <Text style={[styles.impactFlowValue, { color: "#DC2626" }]}>
+                  <Text style={[styles.impactFlowValue, { color: "#BE123C" }]}>
                     {profile.totalDonations} বার
                   </Text>
                   <Text style={styles.impactFlowLabel}>মোট অনুদান</Text>
@@ -600,7 +612,7 @@ export default function ProfileScreen() {
             <View style={styles.modernCardSurface}>
               <View style={styles.surfaceHeaderRow}>
                 <View style={styles.surfaceHeaderLeft}>
-                  <Ionicons name="notifications" size={15} color="#DC2626" />
+                  <Ionicons name="notifications" size={15} color="#BE123C" />
                   <Text style={styles.surfaceTitle}>
                     জরুরি এলার্ট ও নোটিফিকেশন
                   </Text>
@@ -609,7 +621,7 @@ export default function ProfileScreen() {
 
               {renderToggleRow(
                 "flash",
-                "#DC2626",
+                "#BE123C",
                 "#FEF2F2",
                 "কোড রেড পুশ নোটিফিকেশন",
                 "জাবি মেডিকেল সেন্টার ও সাভারের ক্রিটিক্যাল জরুরি রক্তের ডাক পান",
@@ -621,7 +633,7 @@ export default function ProfileScreen() {
 
               {renderToggleRow(
                 "volume-high",
-                "#DC2626",
+                "#BE123C",
                 "#FEF2F2",
                 "জরুরি সাইরেন ও ভাইব্রেশন",
                 "গভীর রাতেও জরুরি অপারেশনের ক্ষেত্রে বিশেষ রিংটোন বাজবে",
@@ -640,7 +652,7 @@ export default function ProfileScreen() {
                       { backgroundColor: "#FEF2F2" },
                     ]}
                   >
-                    <Ionicons name="navigate" size={14} color="#DC2626" />
+                    <Ionicons name="navigate" size={14} color="#BE123C" />
                   </View>
                   <View style={styles.toggleTextCol}>
                     <Text style={styles.toggleTitle}>
@@ -690,7 +702,7 @@ export default function ProfileScreen() {
             <View style={styles.modernCardSurface}>
               <View style={styles.surfaceHeaderRow}>
                 <View style={styles.surfaceHeaderLeft}>
-                  <Ionicons name="shield-checkmark" size={15} color="#DC2626" />
+                  <Ionicons name="shield-checkmark" size={15} color="#BE123C" />
                   <Text style={styles.surfaceTitle}>
                     ডোনার ভিজিবিলিটি ও গোপনীয়তা
                   </Text>
@@ -699,7 +711,7 @@ export default function ProfileScreen() {
 
               {renderToggleRow(
                 "person-circle",
-                "#DC2626",
+                "#BE123C",
                 "#FEF2F2",
                 "রক্তদানে প্রস্তুত (Active Visibility)",
                 "ক্যাম্পাস ডিরেক্টরিতে আপনাকে রক্তদানে আগ্রহী হিসেবে প্রদর্শন করবে",
@@ -711,7 +723,7 @@ export default function ProfileScreen() {
 
               {renderToggleRow(
                 "call",
-                "#DC2626",
+                "#BE123C",
                 "#FEF2F2",
                 "ফোন নম্বর উন্মুক্ত রাখুন",
                 "জরুরি প্রয়োজনে রোগী বা রোগীর স্বজন আপনাকে সরাসরি কল করতে পারবে",
@@ -723,7 +735,7 @@ export default function ProfileScreen() {
 
               {renderToggleRow(
                 "finger-print",
-                "#DC2626",
+                "#BE123C",
                 "#FEF2F2",
                 "বেনামে রক্তদান (Anonymous Mode)",
                 "রক্তদানের পর আপনার নাম ও প্রোফাইল ফিডে গোপন রাখা হবে",
@@ -786,7 +798,7 @@ export default function ProfileScreen() {
                   <MaterialCommunityIcons
                     name="ambulance"
                     size={16}
-                    color="#DC2626"
+                    color="#BE123C"
                   />
                 </View>
                 <View style={styles.toggleTextCol}>
@@ -800,7 +812,7 @@ export default function ProfileScreen() {
                 <View
                   style={[styles.callCircleBtn, { backgroundColor: "#FEF2F2" }]}
                 >
-                  <Ionicons name="call" size={11} color="#DC2626" />
+                  <Ionicons name="call" size={11} color="#BE123C" />
                 </View>
               </TouchableOpacity>
 
@@ -832,7 +844,7 @@ export default function ProfileScreen() {
             <View style={styles.modernCardSurface}>
               <View style={styles.surfaceHeaderRow}>
                 <View style={styles.surfaceHeaderLeft}>
-                  <Ionicons name="person-circle" size={15} color="#DC2626" />
+                  <Ionicons name="person-circle" size={15} color="#BE123C" />
                   <Text style={styles.surfaceTitle}>
                     অ্যাকাউন্ট ও নেভিগেশন
                   </Text>
@@ -847,7 +859,7 @@ export default function ProfileScreen() {
                 <View
                   style={[styles.toggleIconBox, { backgroundColor: "#FEF2F2" }]}
                 >
-                  <Ionicons name="create" size={15} color="#DC2626" />
+                  <Ionicons name="create" size={15} color="#BE123C" />
                 </View>
                 <View style={styles.toggleTextCol}>
                   <Text style={styles.toggleTitle}>
@@ -919,7 +931,7 @@ export default function ProfileScreen() {
                   <Ionicons
                     name={isLoggedIn ? "log-out-outline" : "log-in-outline"}
                     size={16}
-                    color={isLoggedIn ? "#DC2626" : "#0F172A"}
+                    color={isLoggedIn ? "#BE123C" : "#0F172A"}
                   />
                 </View>
                 <View style={styles.toggleTextCol}>
@@ -963,7 +975,7 @@ export default function ProfileScreen() {
           <View style={styles.modalBox}>
             <View style={styles.modalHeaderRow}>
               <View style={styles.modalTitleCluster}>
-                <Ionicons name="qr-code" size={17} color="#DC2626" />
+                <Ionicons name="qr-code" size={17} color="#BE123C" />
                 <Text style={styles.modalHeading}>ডিজিটাল ডোনার পাস</Text>
               </View>
               <TouchableOpacity onPress={() => setQrModalVisible(false)}>
@@ -994,11 +1006,18 @@ export default function ProfileScreen() {
             </View>
 
             <TouchableOpacity
-              style={styles.modalDismissBtn}
+              style={styles.modalDismissBtnTouch}
               activeOpacity={0.88}
               onPress={() => setQrModalVisible(false)}
             >
-              <Text style={styles.modalDismissBtnText}>বন্ধ করুন</Text>
+              <LinearGradient
+                colors={BrandGradient.colors}
+                start={BrandGradient.start}
+                end={BrandGradient.end}
+                style={styles.modalDismissBtn}
+              >
+                <Text style={styles.modalDismissBtnText}>বন্ধ করুন</Text>
+              </LinearGradient>
             </TouchableOpacity>
           </View>
         </View>
@@ -1084,11 +1103,18 @@ export default function ProfileScreen() {
               </View>
 
               <TouchableOpacity
-                style={styles.modalDismissBtn}
+                style={styles.modalDismissBtnTouch}
                 activeOpacity={0.88}
                 onPress={() => setSelectedBadge(null)}
               >
-                <Text style={styles.modalDismissBtnText}>ঠিক আছে</Text>
+                <LinearGradient
+                  colors={BrandGradient.colors}
+                  start={BrandGradient.start}
+                  end={BrandGradient.end}
+                  style={styles.modalDismissBtn}
+                >
+                  <Text style={styles.modalDismissBtnText}>ঠিক আছে</Text>
+                </LinearGradient>
               </TouchableOpacity>
             </View>
           )}
@@ -1140,12 +1166,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 2,
-    borderColor: "#DC2626",
+    borderColor: "#BE123C",
   },
   avatarText: {
     fontSize: 17,
     fontWeight: "900",
-    color: "#DC2626",
+    color: "#BE123C",
     letterSpacing: 0.5,
   },
   activePulseRing: {
@@ -1194,15 +1220,15 @@ const styles = StyleSheet.create({
     width: 48,
     height: 52,
     borderRadius: 10,
-    backgroundColor: "#DC2626",
     alignItems: "center",
     justifyContent: "center",
     gap: 0.5,
-    shadowColor: "#DC2626",
+    shadowColor: "#881337",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowOpacity: 0.28,
+    shadowRadius: 5,
     elevation: 3,
+    overflow: "hidden",
   },
   bloodHexText: {
     fontSize: 14,
@@ -1254,7 +1280,7 @@ const styles = StyleSheet.create({
   qrPassPillText: {
     fontSize: 10,
     fontWeight: "800",
-    color: "#DC2626",
+    color: "#BE123C",
   },
   sharePassPill: {
     flexDirection: "row",
@@ -1307,7 +1333,7 @@ const styles = StyleSheet.create({
     color: "#64748B",
   },
   segmentBtnTextActive: {
-    color: "#DC2626",
+    color: "#BE123C",
     fontWeight: "800",
   },
   flowingTabContent: {
@@ -1413,7 +1439,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#DC2626",
+    backgroundColor: "#BE123C",
     marginTop: 3,
   },
   stepContent: {
@@ -1505,7 +1531,7 @@ const styles = StyleSheet.create({
     color: "#94A3B8",
   },
   chartCountActive: {
-    color: "#DC2626",
+    color: "#BE123C",
     fontWeight: "900",
   },
   chartBarTrack: {
@@ -1522,7 +1548,7 @@ const styles = StyleSheet.create({
     borderRadius: 7,
   },
   chartBarFillActive: {
-    backgroundColor: "#DC2626",
+    backgroundColor: "#BE123C",
   },
   chartYearLabel: {
     fontSize: 9,
@@ -1530,7 +1556,7 @@ const styles = StyleSheet.create({
     color: "#64748B",
   },
   chartYearActive: {
-    color: "#DC2626",
+    color: "#BE123C",
     fontWeight: "800",
   },
   impactFlowRow: {
@@ -1627,8 +1653,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   rolePickerBtnActive: {
-    backgroundColor: "#DC2626",
-    borderColor: "#DC2626",
+    backgroundColor: "#BE123C",
+    borderColor: "#BE123C",
   },
   rolePickerBtnText: {
     fontSize: 10,
@@ -1697,8 +1723,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   radiusBtnActive: {
-    backgroundColor: "#DC2626",
-    borderColor: "#DC2626",
+    backgroundColor: "#BE123C",
+    borderColor: "#BE123C",
   },
   radiusBtnText: {
     fontSize: 9.5,
@@ -1787,7 +1813,7 @@ const styles = StyleSheet.create({
   qrSerialLabel: {
     fontSize: 16,
     fontWeight: "900",
-    color: "#DC2626",
+    color: "#BE123C",
     letterSpacing: 1.2,
     marginTop: 4,
   },
@@ -1817,14 +1843,23 @@ const styles = StyleSheet.create({
     color: "#64748B",
     flex: 1,
   },
-  modalDismissBtn: {
+  modalDismissBtnTouch: {
     width: "100%",
     height: 40,
     borderRadius: 10,
-    backgroundColor: "#DC2626",
+    overflow: "hidden",
+    marginTop: 4,
+    shadowColor: "#881337",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  modalDismissBtn: {
+    width: "100%",
+    height: "100%",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 4,
   },
   modalDismissBtnText: {
     color: "#FFFFFF",

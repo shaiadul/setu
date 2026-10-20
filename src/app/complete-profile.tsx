@@ -20,6 +20,8 @@ import { CampusHeader } from '@/components/campus-header';
 import { PrimaryButton } from '@/components/primary-button';
 import { useBlood } from '@/context/blood-context';
 import { BloodGroup, JuRole } from '@/types/blood';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BrandGradient } from '@/constants/theme';
 
 const BLOOD_GROUPS: BloodGroup[] = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
 
@@ -105,7 +107,7 @@ export default function CompleteProfileScreen() {
       <Switch
         value={value}
         onValueChange={onValueChange}
-        trackColor={{ false: '#E2E8F0', true: '#DC2626' }}
+        trackColor={{ false: '#E2E8F0', true: '#BE123C' }}
         thumbColor={Platform.OS === 'android' ? '#FFFFFF' : undefined}
       />
     </View>
@@ -159,7 +161,7 @@ export default function CompleteProfileScreen() {
 
         <View style={styles.authRequiredContainer}>
           <View style={styles.authRequiredIconBox}>
-            <Ionicons name="lock-closed" size={38} color="#DC2626" />
+            <Ionicons name="lock-closed" size={38} color="#BE123C" />
           </View>
           <Text style={styles.authRequiredTitle}>লগইন করা আবশ্যক</Text>
           <Text style={styles.authRequiredSubtitle}>
@@ -229,7 +231,7 @@ export default function CompleteProfileScreen() {
         {/* SECTION 1: PERSONAL INFORMATION */}
         <View style={styles.sectionSurface}>
           <View style={styles.sectionHeaderRow}>
-            <Ionicons name="person-circle" size={16} color="#DC2626" />
+            <Ionicons name="person-circle" size={16} color="#BE123C" />
             <Text style={styles.sectionTitle}>১. ব্যক্তিগত ও যোগাযোগের তথ্য</Text>
           </View>
 
@@ -287,7 +289,7 @@ export default function CompleteProfileScreen() {
         {/* SECTION 2: BLOOD GROUP & MEDICAL READINESS */}
         <View style={styles.sectionSurface}>
           <View style={styles.sectionHeaderRow}>
-            <MaterialCommunityIcons name="water" size={17} color="#DC2626" />
+            <MaterialCommunityIcons name="water" size={17} color="#BE123C" />
             <Text style={styles.sectionTitle}>২. রক্তের গ্রুপ ও স্বাস্থ্য স্থিতি</Text>
           </View>
 
@@ -324,7 +326,7 @@ export default function CompleteProfileScreen() {
                 <Ionicons
                   name={neverDonated ? 'checkbox' : 'square-outline'}
                   size={15}
-                  color={neverDonated ? '#DC2626' : '#64748B'}
+                  color={neverDonated ? '#BE123C' : '#64748B'}
                 />
                 <Text style={styles.neverDonatedText}>কখনো রক্তদান করিনি</Text>
               </TouchableOpacity>
@@ -452,8 +454,8 @@ export default function CompleteProfileScreen() {
 
           {renderToggleRow(
             'water',
-            '#DC2626',
-            '#FEF2F2',
+            '#BE123C',
+            '#FFF1F2',
             'রক্তদানে সর্বদা প্রস্তুত (Active Donor)',
             'ক্যাম্পাসের জরুরি ডিরেক্টরিতে আপনাকে আগ্রহী হিসেবে দেখাবে',
             readyToDonate,
@@ -464,8 +466,8 @@ export default function CompleteProfileScreen() {
 
           {renderToggleRow(
             'flash',
-            '#DC2626',
-            '#FEF2F2',
+            '#BE123C',
+            '#FFF1F2',
             'কোড রেড পুশ এলার্ট',
             'জাবি মেডিকেল সেন্টার ও সাভারের ক্রিটিক্যাল রোগীর জন্য সরাসরি এলার্ট',
             sosAlerts,
@@ -476,8 +478,8 @@ export default function CompleteProfileScreen() {
 
           {renderToggleRow(
             'call',
-            '#DC2626',
-            '#FEF2F2',
+            '#BE123C',
+            '#FFF1F2',
             'ফোন নম্বর উন্মুক্ত রাখুন',
             'জরুরি প্রয়োজনে রোগী বা রোগীর স্বজন আপনাকে সরাসরি কল করতে পারবে',
             showPhonePublic,
@@ -518,7 +520,7 @@ export default function CompleteProfileScreen() {
                   <Text style={[styles.pickerItemText, department === dept && styles.pickerItemTextActive]}>
                     {dept}
                   </Text>
-                  {department === dept && <Ionicons name="checkmark" size={16} color="#DC2626" />}
+                  {department === dept && <Ionicons name="checkmark" size={16} color="#BE123C" />}
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -549,7 +551,7 @@ export default function CompleteProfileScreen() {
                   <Text style={[styles.pickerItemText, hall === h && styles.pickerItemTextActive]}>
                     {h}
                   </Text>
-                  {hall === h && <Ionicons name="checkmark" size={16} color="#DC2626" />}
+                  {hall === h && <Ionicons name="checkmark" size={16} color="#BE123C" />}
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -574,9 +576,13 @@ export default function CompleteProfileScreen() {
             <View style={styles.idCardMini}>
               <View style={styles.idCardTop}>
                 <Text style={styles.idCardJuTitle}>JAHANGIRNAGAR UNIVERSITY BLOOD NETWORK</Text>
-                <View style={styles.idBloodPill}>
+                <LinearGradient
+                  colors={BrandGradient.colors}
+                  start={BrandGradient.start}
+                  end={BrandGradient.end}
+                  style={styles.idBloodPill}>
                   <Text style={styles.idBloodPillText}>{bloodType}</Text>
-                </View>
+                </LinearGradient>
               </View>
               <Text style={styles.idCardName}>{name}</Text>
               <Text style={styles.idCardDetail}>{department}</Text>
@@ -615,9 +621,9 @@ const styles = StyleSheet.create({
     width: 76,
     height: 76,
     borderRadius: 38,
-    backgroundColor: '#FEF2F2',
+    backgroundColor: '#FFF1F2',
     borderWidth: 2,
-    borderColor: '#FECACA',
+    borderColor: '#FECDD3',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 4,
@@ -811,9 +817,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   bloodChipActive: {
-    backgroundColor: '#DC2626',
-    borderColor: '#DC2626',
-    shadowColor: '#DC2626',
+    backgroundColor: '#BE123C',
+    borderColor: '#BE123C',
+    shadowColor: '#881337',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
@@ -887,8 +893,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   rolePickerBtnActive: {
-    backgroundColor: '#DC2626',
-    borderColor: '#DC2626',
+    backgroundColor: '#BE123C',
+    borderColor: '#BE123C',
   },
   rolePickerBtnText: {
     fontSize: 10,
@@ -935,10 +941,10 @@ const styles = StyleSheet.create({
   saveBtn: {
     height: 48,
     borderRadius: 12,
-    backgroundColor: '#DC2626',
+    backgroundColor: '#BE123C',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#DC2626',
+    shadowColor: '#881337',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.25,
     shadowRadius: 6,
@@ -1011,7 +1017,7 @@ const styles = StyleSheet.create({
     color: '#334155',
   },
   pickerItemTextActive: {
-    color: '#DC2626',
+    color: '#BE123C',
     fontWeight: '800',
   },
 
@@ -1075,10 +1081,10 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   idBloodPill: {
-    backgroundColor: '#DC2626',
     paddingHorizontal: 7,
     paddingVertical: 2,
     borderRadius: 5,
+    overflow: 'hidden',
   },
   idBloodPillText: {
     fontSize: 10,
@@ -1100,7 +1106,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 44,
     borderRadius: 11,
-    backgroundColor: '#DC2626',
+    backgroundColor: '#BE123C',
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 4,

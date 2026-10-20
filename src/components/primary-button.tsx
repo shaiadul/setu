@@ -10,6 +10,8 @@ import {
   ViewStyle,
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BrandGradient } from '@/constants/theme';
 
 export interface PrimaryButtonProps {
   title: string;
@@ -40,8 +42,64 @@ export function PrimaryButton({
 }: PrimaryButtonProps) {
   const isOutline = variant === 'outline';
   const isSecondary = variant === 'secondary';
+  const isGradient = variant === 'primary' || variant === 'danger';
 
-  const iconColor = isOutline ? '#DC2626' : isSecondary ? '#475569' : '#FFFFFF';
+  const iconColor = isOutline ? '#BE123C' : isSecondary ? '#475569' : '#FFFFFF';
+
+  if (isGradient) {
+    return (
+      <TouchableOpacity
+        style={[
+          styles.gradientTouchBase,
+          styles[`shadow_${variant}`],
+          (disabled || loading) && styles.disabled,
+          style,
+        ]}
+        activeOpacity={0.85}
+        disabled={disabled || loading}
+        onPress={onPress}
+      >
+        <LinearGradient
+          colors={BrandGradient.colors}
+          start={BrandGradient.start}
+          end={BrandGradient.end}
+          style={[styles.buttonBase, styles[`size_${size}`], styles.gradientButtonFill]}
+        >
+          {loading ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            <View style={styles.contentRow}>
+              {icon && (
+                iconFamily === 'material' ? (
+                  <MaterialCommunityIcons
+                    name={icon as any}
+                    size={iconSize}
+                    color="#FFFFFF"
+                  />
+                ) : (
+                  <Ionicons
+                    name={icon as any}
+                    size={iconSize}
+                    color="#FFFFFF"
+                  />
+                )
+              )}
+              <Text
+                style={[
+                  styles.textBase,
+                  styles.text_primary,
+                  styles[`textSize_${size}`],
+                  textStyle,
+                ]}
+              >
+                {title}
+              </Text>
+            </View>
+          )}
+        </LinearGradient>
+      </TouchableOpacity>
+    );
+  }
 
   return (
     <TouchableOpacity
@@ -92,12 +150,32 @@ export function PrimaryButton({
 }
 
 const styles = StyleSheet.create({
+  gradientTouchBase: {
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  gradientButtonFill: {
+    width: '100%',
+  },
+  shadow_primary: {
+    shadowColor: '#881337',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.28,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  shadow_danger: {
+    shadowColor: '#881337',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.28,
+    shadowRadius: 8,
+    elevation: 4,
+  },
   buttonBase: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 10,
-    elevation: 3,
+    borderRadius: 12,
   },
   contentRow: {
     flexDirection: 'row',
@@ -110,21 +188,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.1,
   },
 
-  /* Variants */
-  primary: {
-    backgroundColor: '#DC2626',
-    shadowColor: '#DC2626',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-  },
-  danger: {
-    backgroundColor: '#DC2626',
-    shadowColor: '#DC2626',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-  },
+  /* Non-gradient Variants */
   secondary: {
     backgroundColor: '#F1F5F9',
     borderWidth: 1,
@@ -133,15 +197,17 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 3,
+    elevation: 1,
   },
   outline: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1.2,
-    borderColor: '#DC2626',
-    shadowColor: '#DC2626',
+    borderColor: '#BE123C',
+    shadowColor: '#BE123C',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.08,
     shadowRadius: 3,
+    elevation: 1,
   },
 
   /* Text Variants */
@@ -155,35 +221,35 @@ const styles = StyleSheet.create({
     color: '#334155',
   },
   text_outline: {
-    color: '#DC2626',
+    color: '#BE123C',
   },
 
   /* Sizes */
   size_sm: {
-    height: 34,
+    height: 36,
     paddingHorizontal: 12,
-    borderRadius: 8,
+    borderRadius: 9,
   },
   size_md: {
-    height: 42,
+    height: 44,
     paddingHorizontal: 16,
-    borderRadius: 10,
+    borderRadius: 12,
   },
   size_lg: {
-    height: 46,
+    height: 48,
     paddingHorizontal: 18,
-    borderRadius: 12,
+    borderRadius: 14,
   },
 
   /* Text Sizes */
   textSize_sm: {
-    fontSize: 11,
+    fontSize: 11.5,
   },
   textSize_md: {
-    fontSize: 13,
+    fontSize: 13.5,
   },
   textSize_lg: {
-    fontSize: 14,
+    fontSize: 14.5,
   },
 
   disabled: {

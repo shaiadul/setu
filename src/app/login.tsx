@@ -138,7 +138,7 @@ export default function LoginScreen() {
             onPress={() => router.replace("/")}
           >
             <Text style={styles.skipPillText}>জরুরি মোড (লগইন ছাড়া)</Text>
-            <Ionicons name="chevron-forward" size={12} color="#DC2626" />
+            <Ionicons name="chevron-forward" size={12} color="#BE123C" />
           </TouchableOpacity>
         </View>
 
@@ -191,7 +191,7 @@ export default function LoginScreen() {
               <Ionicons
                 name="school-outline"
                 size={14}
-                color={loginMethod === "email" ? "#DC2626" : "#64748B"}
+                color={loginMethod === "email" ? "#BE123C" : "#64748B"}
               />
               <Text
                 style={[
@@ -214,7 +214,7 @@ export default function LoginScreen() {
               <Ionicons
                 name="call-outline"
                 size={14}
-                color={loginMethod === "phone" ? "#DC2626" : "#64748B"}
+                color={loginMethod === "phone" ? "#BE123C" : "#64748B"}
               />
               <Text
                 style={[
@@ -309,7 +309,7 @@ export default function LoginScreen() {
           {/* Unified Toggle Row for "Remember Me" */}
           <View style={styles.toggleRow}>
             <View style={styles.toggleIconBox}>
-              <Ionicons name="key-outline" size={14} color="#DC2626" />
+              <Ionicons name="key-outline" size={14} color="#BE123C" />
             </View>
             <View style={styles.toggleTextCol}>
               <Text style={styles.toggleTitle}>
@@ -322,7 +322,7 @@ export default function LoginScreen() {
             <Switch
               value={rememberMe}
               onValueChange={setRememberMe}
-              trackColor={{ false: "#E2E8F0", true: "#DC2626" }}
+              trackColor={{ false: "#E2E8F0", true: "#BE123C" }}
               thumbColor={Platform.OS === "android" ? "#FFFFFF" : undefined}
             />
           </View>
@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
     gap: 4,
     backgroundColor: "#FEF2F2",
     borderWidth: 0.8,
-    borderColor: "#FECACA",
+    borderColor: "#FECDD3",
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 14,
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
   skipPillText: {
     fontSize: 10.5,
     fontWeight: "800",
-    color: "#DC2626",
+    color: "#BE123C",
   },
   brandHero: {
     alignItems: "center",
@@ -413,12 +413,12 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: "#FFFFFF",
     borderWidth: 2,
-    borderColor: "#FECACA",
+    borderColor: "#FECDD3",
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#DC2626",
+    shadowColor: "#881337",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
+    shadowOpacity: 0.16,
     shadowRadius: 10,
     elevation: 3,
   },
@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
     color: "#64748B",
   },
   segmentBtnTextActive: {
-    color: "#DC2626",
+    color: "#BE123C",
     fontWeight: "800",
   },
 
@@ -588,7 +588,7 @@ const styles = StyleSheet.create({
   forgotPassText: {
     fontSize: 10,
     fontWeight: "700",
-    color: "#DC2626",
+    color: "#BE123C",
   },
   inputContainer: {
     flexDirection: "row",
@@ -647,10 +647,10 @@ const styles = StyleSheet.create({
   submitBtn: {
     height: 46,
     borderRadius: 12,
-    backgroundColor: "#DC2626",
+    backgroundColor: "#BE123C",
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#DC2626",
+    shadowColor: "#881337",
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.25,
     shadowRadius: 6,
@@ -687,7 +687,7 @@ const styles = StyleSheet.create({
   newDonorLink: {
     fontSize: 11.5,
     fontWeight: "800",
-    color: "#DC2626",
+    color: "#BE123C",
   },
 
   /* Safety Notice */

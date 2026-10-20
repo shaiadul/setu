@@ -15,6 +15,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CampusHeader } from '@/components/campus-header';
 import { useBlood } from '@/context/blood-context';
 import { SetuNotification } from '@/types/blood';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BrandGradient } from '@/constants/theme';
 
 const INITIAL_NOTIFICATIONS: SetuNotification[] = [
   {
@@ -122,8 +124,8 @@ export default function NotificationsScreen() {
       case 'code_red':
         return {
           icon: 'flash' as const,
-          color: '#DC2626',
-          bg: '#FEF2F2',
+          color: '#BE123C',
+          bg: '#FFF1F2',
           badgeText: 'জরুরি এলার্ট',
         };
       case 'donor_response':
@@ -186,7 +188,7 @@ export default function NotificationsScreen() {
               activeOpacity={0.7}
               onPress={handleMarkAllAsRead}
             >
-              <Ionicons name="checkmark-done" size={13} color="#DC2626" />
+              <Ionicons name="checkmark-done" size={13} color="#BE123C" />
               <Text style={styles.actionBtnLabel}>সব পঠিত</Text>
             </TouchableOpacity>
           )}
@@ -229,7 +231,7 @@ export default function NotificationsScreen() {
             <Ionicons
               name="flash"
               size={11}
-              color={activeFilter === 'code_red' ? '#DC2626' : '#EA580C'}
+              color={activeFilter === 'code_red' ? '#BE123C' : '#EA580C'}
             />
             <Text style={[styles.filterChipText, activeFilter === 'code_red' && styles.filterChipTextActive]}>
               কোড রেড
@@ -244,7 +246,7 @@ export default function NotificationsScreen() {
             <Ionicons
               name="heart"
               size={11}
-              color={activeFilter === 'donor_response' ? '#DC2626' : '#16A34A'}
+              color={activeFilter === 'donor_response' ? '#BE123C' : '#16A34A'}
             />
             <Text style={[styles.filterChipText, activeFilter === 'donor_response' && styles.filterChipTextActive]}>
               ডোনার সাড়া
@@ -259,7 +261,7 @@ export default function NotificationsScreen() {
             <Ionicons
               name="trophy"
               size={11}
-              color={activeFilter === 'milestone' ? '#DC2626' : '#D97706'}
+              color={activeFilter === 'milestone' ? '#BE123C' : '#D97706'}
             />
             <Text style={[styles.filterChipText, activeFilter === 'milestone' && styles.filterChipTextActive]}>
               সম্মাননা
@@ -286,12 +288,19 @@ export default function NotificationsScreen() {
               জরুরি রক্তের ডাক বা ক্যাম্পাসের ডোনার আপডেট এলে এখানে সাথে সাথে দেখতে পাবেন।
             </Text>
             <TouchableOpacity
-              style={styles.emptyResetBtn}
-              activeOpacity={0.8}
+              style={styles.emptyResetBtnTouch}
+              activeOpacity={0.85}
               onPress={() => setNotifications(INITIAL_NOTIFICATIONS)}
             >
-              <Ionicons name="refresh" size={13} color="#FFFFFF" />
-              <Text style={styles.emptyResetBtnText}>নোটিফিকেশন রিলোড করুন</Text>
+              <LinearGradient
+                colors={BrandGradient.colors}
+                start={BrandGradient.start}
+                end={BrandGradient.end}
+                style={styles.emptyResetBtnGradient}
+              >
+                <Ionicons name="refresh" size={13} color="#FFFFFF" />
+                <Text style={styles.emptyResetBtnText}>নোটিফিকেশন রিলোড করুন</Text>
+              </LinearGradient>
             </TouchableOpacity>
           </View>
         ) : (
@@ -332,7 +341,7 @@ export default function NotificationsScreen() {
                   {item.requestId && (
                     <View style={styles.cardActionRow}>
                       <View style={styles.respondActionPill}>
-                        <Ionicons name="eye-outline" size={11} color="#DC2626" />
+                        <Ionicons name="eye-outline" size={11} color="#BE123C" />
                         <Text style={styles.respondActionText}>অনুরোধের বিবরণ দেখুন</Text>
                       </View>
                     </View>
@@ -380,9 +389,9 @@ const styles = StyleSheet.create({
     color: '#0F172A',
   },
   unreadBadgePill: {
-    backgroundColor: '#FEF2F2',
+    backgroundColor: '#FFF1F2',
     borderWidth: 0.8,
-    borderColor: '#FECACA',
+    borderColor: '#FECDD3',
     paddingHorizontal: 7,
     paddingVertical: 2,
     borderRadius: 8,
@@ -390,7 +399,7 @@ const styles = StyleSheet.create({
   unreadBadgeText: {
     fontSize: 9.5,
     fontWeight: '800',
-    color: '#DC2626',
+    color: '#BE123C',
   },
   allReadText: {
     fontSize: 10,
@@ -410,7 +419,7 @@ const styles = StyleSheet.create({
   actionBtnLabel: {
     fontSize: 10.5,
     fontWeight: '700',
-    color: '#DC2626',
+    color: '#BE123C',
   },
 
   /* Filter Track */
@@ -433,8 +442,8 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
   },
   filterChipActive: {
-    backgroundColor: '#FEF2F2',
-    borderColor: '#DC2626',
+    backgroundColor: '#FFF1F2',
+    borderColor: '#BE123C',
   },
   filterChipText: {
     fontSize: 10.5,
@@ -442,7 +451,7 @@ const styles = StyleSheet.create({
     color: '#64748B',
   },
   filterChipTextActive: {
-    color: '#DC2626',
+    color: '#BE123C',
     fontWeight: '800',
   },
 
@@ -467,10 +476,10 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   notifCardUnread: {
-    borderColor: '#FECACA',
+    borderColor: '#FECDD3',
     backgroundColor: '#FFFAFA',
     borderLeftWidth: 3.5,
-    borderLeftColor: '#DC2626',
+    borderLeftColor: '#BE123C',
   },
   typeIconSquircle: {
     width: 34,
@@ -507,7 +516,7 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#DC2626',
+    backgroundColor: '#BE123C',
     marginLeft: 'auto',
   },
   notifTitle: {
@@ -534,9 +543,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'flex-start',
     gap: 4,
-    backgroundColor: '#FEF2F2',
+    backgroundColor: '#FFF1F2',
     borderWidth: 0.8,
-    borderColor: '#FECACA',
+    borderColor: '#FECDD3',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
@@ -544,7 +553,7 @@ const styles = StyleSheet.create({
   respondActionText: {
     fontSize: 9.5,
     fontWeight: '800',
-    color: '#DC2626',
+    color: '#BE123C',
   },
   deleteIconBtn: {
     padding: 3,
@@ -582,15 +591,23 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 17,
   },
-  emptyResetBtn: {
+  emptyResetBtnTouch: {
+    borderRadius: 17,
+    overflow: 'hidden',
+    shadowColor: '#881337',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.28,
+    shadowRadius: 6,
+    elevation: 3,
+    marginTop: 6,
+  },
+  emptyResetBtnGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: '#DC2626',
-    paddingHorizontal: 14,
-    height: 34,
+    paddingHorizontal: 16,
+    height: 36,
     borderRadius: 17,
-    marginTop: 6,
   },
   emptyResetBtnText: {
     fontSize: 11,

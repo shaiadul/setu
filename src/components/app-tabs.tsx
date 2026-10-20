@@ -1,5 +1,5 @@
 import React from 'react';
-import { Platform, StyleSheet } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,51 +14,61 @@ export default function AppTabs() {
 
   const codeRedCount = requests.filter(r => r.urgency === 'Code Red').length;
 
-  const bottomInset = Math.max(insets.bottom, Platform.OS === 'android' ? 12 : 8);
-  const tabHeight = 58 + bottomInset;
+  const bottomInset = Math.max(insets.bottom, Platform.OS === 'android' ? 6 : 4);
+  const tabHeight = 52 + bottomInset;
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: theme.primary,
-        tabBarInactiveTintColor: theme.textSecondary,
+        tabBarInactiveTintColor: '#94A3B8',
         tabBarStyle: {
-          backgroundColor: theme.card,
-          borderTopColor: theme.cardBorder,
-          borderTopWidth: 1,
+          backgroundColor: '#FFFFFF',
+          borderTopColor: 'rgba(226, 232, 240, 0.6)',
+          borderTopWidth: 0.5,
           height: tabHeight,
           paddingBottom: bottomInset,
-          paddingTop: 8,
-          elevation: 10,
-          shadowColor: '#000000',
-          shadowOffset: { width: 0, height: -3 },
-          shadowOpacity: 0.06,
-          shadowRadius: 8,
+          paddingTop: 4,
+          elevation: 20,
+          shadowColor: '#0F172A',
+          shadowOffset: { width: 0, height: -6 },
+          shadowOpacity: 0.08,
+          shadowRadius: 16,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '700',
-          marginTop: 2,
+          fontSize: 10,
+          fontWeight: '600',
+          letterSpacing: -0.1,
+          marginTop: 1,
+        },
+        tabBarIconStyle: {
+          marginBottom: -2,
         },
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          title: 'রক্তের ফিড',
+          title: 'ফিড',
           tabBarBadge: codeRedCount > 0 ? codeRedCount : undefined,
           tabBarBadgeStyle: {
-            backgroundColor: theme.primary,
+            backgroundColor: '#DC2626',
             color: '#FFFFFF',
-            fontSize: 10,
+            fontSize: 9,
             fontWeight: '800',
+            minWidth: 16,
+            height: 16,
+            borderRadius: 8,
+            lineHeight: 15,
           },
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name={focused ? 'pulse' : 'pulse-outline'}
-              size={size + 1}
-              color={color}
-            />
+          tabBarIcon: ({ color, focused }) => (
+            <View style={focused ? styles.activeIconWrap : undefined}>
+              <Ionicons
+                name={focused ? 'pulse' : 'pulse-outline'}
+                size={22}
+                color={color}
+              />
+            </View>
           ),
         }}
       />
@@ -66,41 +76,56 @@ export default function AppTabs() {
         name="request"
         options={{
           title: 'অনুরোধ',
-          tabBarIcon: ({ color, size, focused }) => (
-            <MaterialCommunityIcons
-              name={focused ? 'plus-circle' : 'plus-circle-outline'}
-              size={size + 3}
-              color={color}
-            />
+          tabBarIcon: ({ color, focused }) => (
+            <View style={focused ? styles.activeIconWrap : undefined}>
+              <MaterialCommunityIcons
+                name={focused ? 'plus-circle' : 'plus-circle-outline'}
+                size={23}
+                color={color}
+              />
+            </View>
           ),
         }}
       />
       <Tabs.Screen
         name="drives"
         options={{
-          title: 'ডোনার ও ক্যাম্প',
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name={focused ? 'people' : 'people-outline'}
-              size={size + 1}
-              color={color}
-            />
+          title: 'ডোনার',
+          tabBarIcon: ({ color, focused }) => (
+            <View style={focused ? styles.activeIconWrap : undefined}>
+              <Ionicons
+                name={focused ? 'people' : 'people-outline'}
+                size={22}
+                color={color}
+              />
+            </View>
           ),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'পাসপোর্ট',
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name={focused ? 'person-circle' : 'person-circle-outline'}
-              size={size + 2}
-              color={color}
-            />
+          title: 'প্রোফাইল',
+          tabBarIcon: ({ color, focused }) => (
+            <View style={focused ? styles.activeIconWrap : undefined}>
+              <Ionicons
+                name={focused ? 'person-circle' : 'person-circle-outline'}
+                size={23}
+                color={color}
+              />
+            </View>
           ),
         }}
       />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  activeIconWrap: {
+    backgroundColor: 'rgba(220, 38, 38, 0.08)',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+  },
+});

@@ -200,6 +200,25 @@ export default function AppTabs() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="login"
+        options={{
+          href: null,
+          tabBarStyle: { display: 'none' },
+        }}
+      />
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="complete-profile"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

@@ -100,9 +100,7 @@ export function CampusHeader({
                   style={styles.iconCircleBtn}
                   activeOpacity={0.7}
                   onPress={() => {
-                    if (codeRedCount > 0) {
-                      router.push('/');
-                    }
+                    router.push('/notifications');
                   }}>
                   <Ionicons name="notifications-outline" size={16} color="#FFFFFF" />
                   {codeRedCount > 0 && (

@@ -15,6 +15,7 @@ import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CampusHeader } from '@/components/campus-header';
+import { PrimaryButton } from '@/components/primary-button';
 import { useBlood } from '@/context/blood-context';
 import { BloodGroup, CaseType, JuRole, UrgencyLevel } from '@/types/blood';
 
@@ -371,16 +372,12 @@ export default function RequestScreen() {
         </View>
 
         {/* Refined Submit Action */}
-        <TouchableOpacity
-          style={styles.submitBtn}
-          activeOpacity={0.88}
-          disabled={isSubmitting}
-          onPress={handleSubmit}>
-          <Ionicons name="paper-plane" size={16} color="#FFFFFF" />
-          <Text style={styles.submitBtnText}>
-            {isSubmitting ? 'পোস্ট হচ্ছে...' : 'সেতু নেটওয়ার্কে রক্তের অনুরোধ পোস্ট করুন'}
-          </Text>
-        </TouchableOpacity>
+        <PrimaryButton
+          title={isSubmitting ? 'পোস্ট হচ্ছে...' : 'সেতু নেটওয়ার্কে রক্তের অনুরোধ পোস্ট করুন'}
+          icon="paper-plane"
+          loading={isSubmitting}
+          onPress={handleSubmit}
+        />
       </ScrollView>
     </KeyboardAvoidingView>
   );

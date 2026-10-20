@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CampusHeader } from "@/components/campus-header";
 import { useBlood } from "@/context/blood-context";
 import { JuRole } from "@/types/blood";
+import { router } from "expo-router";
 
 interface BadgeItem {
   id: string;
@@ -111,7 +112,7 @@ const YEARLY_DONATIONS = [
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
-  const { profile, updateProfile, setShowSplash } = useBlood();
+  const { profile, updateProfile, setShowSplash, isLoggedIn, logoutUser } = useBlood();
 
   // Active Segment: 'showcase' or 'settings'
   const [activeTab, setActiveTab] = useState<"showcase" | "settings">(
@@ -133,6 +134,24 @@ export default function ProfileScreen() {
   const [anonymousMode, setAnonymousMode] = useState(false);
 
   const bottomPadding = 56 + Math.max(insets.bottom, 12);
+
+  const handleEditProfilePress = () => {
+    if (!isLoggedIn) {
+      Alert.alert(
+        'লগইন আবশ্যক',
+        'প্রোফাইল তথ্য যোগ বা সম্পাদন করার পূর্বে অনুগ্রহ করে সাইন ইন করুন।',
+        [
+          { text: 'বাতিল', style: 'cancel' },
+          {
+            text: 'লগইন করুন',
+            onPress: () => router.push('/login?redirectTo=complete-profile'),
+          },
+        ]
+      );
+      return;
+    }
+    router.push('/complete-profile');
+  };
 
   const handleRoleChange = (newRole: JuRole) => {
     updateProfile({ role: newRole });
@@ -270,7 +289,16 @@ export default function ProfileScreen() {
               onPress={() => setQrModalVisible(true)}
             >
               <Ionicons name="qr-code" size={12} color="#DC2626" />
-              <Text style={styles.qrPassPillText}>কিউআর পাস</Text>
+              <Text style={styles.qrPassPillText}>QR</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.qrPassPill}
+              activeOpacity={0.8}
+              onPress={handleEditProfilePress}
+            >
+              <Ionicons name="create-outline" size={12} color="#DC2626" />
+              <Text style={styles.qrPassPillText}>Edit</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -794,6 +822,116 @@ export default function ProfileScreen() {
                   </Text>
                   <Text style={styles.toggleSub}>
                     জরুরি রক্তদান ও ট্র্যাকিং টিউটোরিয়াল স্লাইডার
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={14} color="#94A3B8" />
+              </TouchableOpacity>
+            </View>
+
+            {/* ACCOUNT & APP FLOW NAVIGATION */}
+            <View style={styles.modernCardSurface}>
+              <View style={styles.surfaceHeaderRow}>
+                <View style={styles.surfaceHeaderLeft}>
+                  <Ionicons name="person-circle" size={15} color="#DC2626" />
+                  <Text style={styles.surfaceTitle}>
+                    অ্যাকাউন্ট ও নেভিগেশন
+                  </Text>
+                </View>
+              </View>
+
+              <TouchableOpacity
+                style={styles.helplineRow}
+                activeOpacity={0.8}
+                onPress={handleEditProfilePress}
+              >
+                <View
+                  style={[styles.toggleIconBox, { backgroundColor: "#FEF2F2" }]}
+                >
+                  <Ionicons name="create" size={15} color="#DC2626" />
+                </View>
+                <View style={styles.toggleTextCol}>
+                  <Text style={styles.toggleTitle}>
+                    ডোনার প্রোফাইল সম্পূর্ণ বা সম্পাদন করুন
+                  </Text>
+                  <Text style={styles.toggleSub}>
+                    রক্তের গ্রুপ, আবাসিক হল ও ভেরিফিকেশন তথ্য আপডেট
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={14} color="#94A3B8" />
+              </TouchableOpacity>
+
+              <View style={styles.hairlineDivider} />
+
+              <TouchableOpacity
+                style={styles.helplineRow}
+                activeOpacity={0.8}
+                onPress={() => router.push('/notifications')}
+              >
+                <View
+                  style={[styles.toggleIconBox, { backgroundColor: "#FEF3C7" }]}
+                >
+                  <Ionicons name="notifications" size={15} color="#D97706" />
+                </View>
+                <View style={styles.toggleTextCol}>
+                  <Text style={styles.toggleTitle}>
+                    ইনবক্স ও জরুরি নোটিফিকেশন সেন্টার
+                  </Text>
+                  <Text style={styles.toggleSub}>
+                    কোড রেড এলার্ট ও ক্যাম্পাসের রক্তদানের বার্তা
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={14} color="#94A3B8" />
+              </TouchableOpacity>
+
+              <View style={styles.hairlineDivider} />
+
+              <TouchableOpacity
+                style={styles.helplineRow}
+                activeOpacity={0.8}
+                onPress={() => {
+                  if (isLoggedIn) {
+                    Alert.alert(
+                      'লগআউট নিশ্চিতকরণ',
+                      'আপনি কি অ্যাকাউন্ট থেকে লগআউট করতে চান?',
+                      [
+                        { text: 'বাতিল', style: 'cancel' },
+                        {
+                          text: 'লগআউট',
+                          style: 'destructive',
+                          onPress: async () => {
+                            await logoutUser();
+                            Alert.alert('লগআউট সম্পন্ন', 'আপনি সফলভাবে লগআউট হয়েছেন।');
+                          },
+                        },
+                      ]
+                    );
+                  } else {
+                    router.push('/login');
+                  }
+                }}
+              >
+                <View
+                  style={[
+                    styles.toggleIconBox,
+                    { backgroundColor: isLoggedIn ? "#FEF2F2" : "#F1F5F9" },
+                  ]}
+                >
+                  <Ionicons
+                    name={isLoggedIn ? "log-out-outline" : "log-in-outline"}
+                    size={16}
+                    color={isLoggedIn ? "#DC2626" : "#0F172A"}
+                  />
+                </View>
+                <View style={styles.toggleTextCol}>
+                  <Text style={styles.toggleTitle}>
+                    {isLoggedIn
+                      ? "অ্যাকাউন্ট থেকে লগআউট করুন"
+                      : "Google সাইন ইন / লগইন করুন"}
+                  </Text>
+                  <Text style={styles.toggleSub}>
+                    {isLoggedIn
+                      ? "বর্তমান সেশন সমাপ্ত করতে ট্যাপ করুন"
+                      : "জাবি ইমেইল অথবা Google অ্যাকাউন্ট দিয়ে লগইন করুন"}
                   </Text>
                 </View>
                 <Ionicons name="chevron-forward" size={14} color="#94A3B8" />

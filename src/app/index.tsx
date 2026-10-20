@@ -33,6 +33,16 @@ const BLOOD_GROUPS: BloodGroup[] = [
   "AB+",
 ];
 
+const WEEKLY_IMPACT_DATA = [
+  { day: "শনি", bags: 3, heightPercent: 45, isPeak: false },
+  { day: "রবি", bags: 6, heightPercent: 75, isPeak: false },
+  { day: "সোম", bags: 4, heightPercent: 55, isPeak: false },
+  { day: "মঙ্গল", bags: 8, heightPercent: 100, isPeak: true },
+  { day: "বুধ", bags: 5, heightPercent: 65, isPeak: false },
+  { day: "বৃহঃ", bags: 7, heightPercent: 88, isPeak: false },
+  { day: "আজ", bags: 4, heightPercent: 60, isToday: true },
+];
+
 export default function FeedScreen() {
   const insets = useSafeAreaInsets();
   const {
@@ -137,32 +147,99 @@ export default function FeedScreen() {
 
   const renderHeader = () => (
     <View style={styles.headerBlock}>
-      {/* Live Campus Pulse Status Card */}
-      <View style={styles.pulseCard}>
-        <View style={styles.pulseTop}>
-          <View style={styles.pulseLeft}>
-            <View style={styles.pulseLiveDot} />
-            <Text style={styles.pulseHeading}>
-              জাহাঙ্গীরনগর বিশ্ববিদ্যালয় লাইভ এসওএস
+      {/* Inspiring Campus Blood Impact & Weekly Graph Hero Card */}
+      <View style={styles.impactCard}>
+        {/* Header with Quote & Life Count */}
+        <View style={styles.impactTopRow}>
+          <View style={styles.impactTitleCol}>
+            <View style={styles.impactLiveBadge}>
+              <View style={styles.impactDot} />
+              <Text style={styles.impactLiveText}>
+                ক্যাম্পাস রক্তদান প্রভাব
+              </Text>
+            </View>
+            <Text style={styles.impactQuoteText}>
+              “আপনার এক ব্যাগ রক্ত, মুমূর্ষু মুখে হাসি”
             </Text>
+          </View>
+
+          <TouchableOpacity
+            style={styles.heroActionBtn}
+            activeOpacity={0.8}
+            onPress={() => router.push("/drives")}
+          >
+            <Ionicons name="calendar-outline" size={13} color="#DC2626" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Weekly Donation Bar Graph */}
+        <View style={styles.graphContainer}>
+          <View style={styles.graphHeader}>
+            <Text style={styles.graphSubtitle}>
+              এই সপ্তাহে <Text style={styles.graphHighlight}>৩৭ ব্যাগ</Text> •
+              ৯৮ জন উপকৃত
+            </Text>
+            <View style={styles.peakIndicator}>
+              <Ionicons name="trending-up" size={12} color="#16A34A" />
+              <Text style={styles.peakText}>+২৪%</Text>
+            </View>
+          </View>
+
+          {/* Bars */}
+          <View style={styles.barsRow}>
+            {WEEKLY_IMPACT_DATA.map((item, index) => {
+              const isActiveToday = item.isToday;
+              return (
+                <View key={index} style={styles.barCol}>
+                  <Text
+                    style={[
+                      styles.barBagsLabel,
+                      isActiveToday && styles.barBagsLabelActive,
+                    ]}
+                  >
+                    {item.bags}
+                  </Text>
+                  <View style={styles.barTrack}>
+                    <View
+                      style={[
+                        styles.barFill,
+                        { height: `${item.heightPercent}%` },
+                        isActiveToday
+                          ? styles.barFillToday
+                          : item.isPeak
+                            ? styles.barFillPeak
+                            : styles.barFillNormal,
+                      ]}
+                    />
+                  </View>
+                  <Text
+                    style={[
+                      styles.barDayText,
+                      isActiveToday && styles.barDayTextActive,
+                    ]}
+                  >
+                    {item.day}
+                  </Text>
+                </View>
+              );
+            })}
           </View>
         </View>
 
-        <View style={styles.pulseStatsRow}>
-          <View style={styles.pulseStatItem}>
-            <Text style={styles.pulseStatNum}>{codeRedTotal}</Text>
-            <Text style={styles.pulseStatLabel}>কোড রেড</Text>
+        {/* Quick Stock Status Strip */}
+        <View style={styles.stockNoticeRow}>
+          <View style={styles.stockNoticeLeft}>
+            <MaterialCommunityIcons
+              name="water-alert-outline"
+              size={15}
+              color="#DC2626"
+            />
+            <Text style={styles.stockNoticeText}>
+              জরুরি রক্তের প্রয়োজন:{" "}
+              <Text style={styles.stockHighlight}>O- এবং B-</Text>
+            </Text>
           </View>
-          <View style={styles.pulseStatDivider} />
-          <View style={styles.pulseStatItem}>
-            <Text style={styles.pulseStatNum}>{requests.length}</Text>
-            <Text style={styles.pulseStatLabel}>মোট অনুরোধ</Text>
-          </View>
-          <View style={styles.pulseStatDivider} />
-          <View style={styles.pulseStatItem}>
-            <Text style={[styles.pulseStatNum, { color: "#16A34A" }]}>১৫+</Text>
-            <Text style={styles.pulseStatLabel}>লাইভ ডোনার</Text>
-          </View>
+          <Text style={styles.stockSpeedText}>⚡ গড় সাড়া ৮ মি.</Text>
         </View>
       </View>
 
@@ -446,8 +523,10 @@ export default function FeedScreen() {
 
   return (
     <View style={styles.screen}>
-      {/* Feed header with right side actions restored */}
-      <CampusHeader />
+      <CampusHeader
+        title="সেতু • রক্তের ফিড"
+        subtitle="জাহাঙ্গীরনগর বিশ্ববিদ্যালয় ডোনার নেটওয়ার্ক"
+      />
 
       <FlatList
         data={filteredRequests}
@@ -518,81 +597,181 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 4,
   },
-  pulseCard: {
+  impactCard: {
     backgroundColor: "#FFFFFF",
     borderRadius: 14,
     padding: 12,
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    gap: 8,
+    gap: 10,
     shadowColor: "#0F172A",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 6,
     elevation: 2,
   },
-  pulseTop: {
+  impactTopRow: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: 10,
   },
-  pulseLeft: {
+  impactTitleCol: {
+    flex: 1,
+    gap: 4,
+  },
+  impactLiveBadge: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    gap: 5,
   },
-  pulseLiveDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
-    backgroundColor: "#DC2626",
+  impactDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#16A34A",
   },
-  pulseHeading: {
+  impactLiveText: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: "#16A34A",
+    letterSpacing: 0.2,
+  },
+  impactQuoteText: {
     fontSize: 12,
     fontWeight: "800",
     color: "#0F172A",
-    letterSpacing: -0.1,
+    lineHeight: 16,
   },
-  pulseEtaBadge: {
+  heroActionBtn: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: "#FEF2F2",
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingHorizontal: 8,
+    height: 26,
     borderRadius: 6,
+    backgroundColor: "#FEF2F2",
+    borderWidth: 0.8,
+    borderColor: "#FECACA",
   },
-  pulseEtaText: {
+  heroActionText: {
     fontSize: 10,
-    fontWeight: "700",
+    fontWeight: "800",
     color: "#DC2626",
   },
-  pulseStatsRow: {
+  graphContainer: {
+    backgroundColor: "#F8FAFC",
+    borderRadius: 10,
+    padding: 10,
+    gap: 8,
+  },
+  graphHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  graphSubtitle: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#475569",
+  },
+  graphHighlight: {
+    color: "#DC2626",
+    fontWeight: "800",
+  },
+  peakIndicator: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-around",
-    backgroundColor: "#F8FAFC",
-    paddingVertical: 7,
-    borderRadius: 8,
+    gap: 2,
+    backgroundColor: "#DCFCE7",
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 4,
   },
-  pulseStatItem: {
+  peakText: {
+    fontSize: 9,
+    fontWeight: "800",
+    color: "#15803D",
+  },
+  barsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    height: 68,
+    paddingTop: 8,
+    paddingHorizontal: 4,
+  },
+  barCol: {
     alignItems: "center",
-    gap: 1,
+    gap: 3,
+    flex: 1,
   },
-  pulseStatNum: {
-    fontSize: 14,
-    fontWeight: "900",
+  barBagsLabel: {
+    fontSize: 9,
+    fontWeight: "700",
+    color: "#94A3B8",
+  },
+  barBagsLabelActive: {
     color: "#DC2626",
+    fontWeight: "900",
   },
-  pulseStatLabel: {
-    fontSize: 10,
+  barTrack: {
+    width: 14,
+    height: 40,
+    backgroundColor: "#E2E8F0",
+    borderRadius: 7,
+    justifyContent: "flex-end",
+    overflow: "hidden",
+  },
+  barFill: {
+    width: "100%",
+    borderRadius: 7,
+  },
+  barFillNormal: {
+    backgroundColor: "#94A3B8",
+  },
+  barFillPeak: {
+    backgroundColor: "#0284C7",
+  },
+  barFillToday: {
+    backgroundColor: "#DC2626",
+  },
+  barDayText: {
+    fontSize: 9,
     fontWeight: "600",
     color: "#64748B",
   },
-  pulseStatDivider: {
-    width: 1,
-    height: 18,
-    backgroundColor: "#E2E8F0",
+  barDayTextActive: {
+    color: "#DC2626",
+    fontWeight: "800",
+  },
+  stockNoticeRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#FEF2F2",
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 7,
+  },
+  stockNoticeLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+  stockNoticeText: {
+    fontSize: 10,
+    fontWeight: "600",
+    color: "#475569",
+  },
+  stockHighlight: {
+    color: "#DC2626",
+    fontWeight: "800",
+  },
+  stockSpeedText: {
+    fontSize: 9,
+    fontWeight: "700",
+    color: "#DC2626",
   },
   filterScrollTrack: {
     flexDirection: "row",

@@ -3,6 +3,7 @@ import {
   Alert,
   FlatList,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -15,13 +16,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CampusHeader } from '@/components/campus-header';
 import { DonorCard } from '@/components/donor-card';
 import { useBlood } from '@/context/blood-context';
-import { useTheme } from '@/hooks/use-theme';
 import { BloodDrive, BloodGroup, JuRole } from '@/types/blood';
 
 const BLOOD_GROUPS: BloodGroup[] = ['O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+'];
 
 export default function DirectoryAndDrivesScreen() {
-  const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { donors, drives, toggleBookDrive } = useBlood();
 
@@ -30,7 +29,7 @@ export default function DirectoryAndDrivesScreen() {
   const [selectedBlood, setSelectedBlood] = useState<'all' | BloodGroup>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const bottomPadding = 64 + Math.max(insets.bottom, 12);
+  const bottomPadding = 56 + Math.max(insets.bottom, 12);
 
   const filteredDonors = donors.filter(d => {
     if (selectedRole !== 'all' && d.role !== selectedRole) return false;
@@ -69,60 +68,53 @@ export default function DirectoryAndDrivesScreen() {
       <View
         style={[
           styles.driveCard,
-          {
-            backgroundColor: theme.card,
-            borderColor: item.isBooked ? theme.success : theme.cardBorder,
-          },
+          item.isBooked && styles.driveCardBooked,
         ]}>
         <View style={styles.driveHeader}>
           <View style={styles.driveHeaderLeft}>
-            <View style={[styles.datePill, { backgroundColor: theme.primaryContainer }]}>
-              <Ionicons name="calendar" size={12} color={theme.primary} />
-              <Text style={[styles.dateText, { color: theme.primary }]}>{item.date}</Text>
+            <View style={styles.datePill}>
+              <Ionicons name="calendar-outline" size={11} color="#DC2626" />
+              <Text style={styles.dateText}>{item.date}</Text>
             </View>
-            <Text style={[styles.timeText, { color: theme.textSecondary }]}>{item.time}</Text>
+            <Text style={styles.timeText}>{item.time}</Text>
           </View>
 
           {item.isBooked && (
-            <View style={[styles.bookedBadge, { backgroundColor: theme.successLight }]}>
-              <Ionicons name="checkmark-done" size={12} color={theme.success} />
-              <Text style={[styles.bookedText, { color: theme.success }]}>বুকড</Text>
+            <View style={styles.bookedBadge}>
+              <Ionicons name="checkmark-circle" size={11} color="#16A34A" />
+              <Text style={styles.bookedText}>বুকড</Text>
             </View>
           )}
         </View>
 
-        <Text style={[styles.driveTitle, { color: theme.text }]}>{item.title}</Text>
+        <Text style={styles.driveTitle}>{item.title}</Text>
 
-        <View style={[styles.venueBox, { backgroundColor: theme.backgroundElement }]}>
+        <View style={styles.venueBox}>
           <View style={styles.venueRow}>
-            <Ionicons name="location" size={14} color={theme.secondary} />
-            <Text style={[styles.venueText, { color: theme.text }]}>{item.venue}</Text>
+            <Ionicons name="location-outline" size={12} color="#DC2626" />
+            <Text style={styles.venueText}>{item.venue}</Text>
           </View>
           <View style={styles.venueRow}>
-            <Ionicons name="people-outline" size={14} color={theme.textSecondary} />
-            <Text style={[styles.coordText, { color: theme.textSecondary }]}>
-              আয়োজনে: {item.coordinator}
-            </Text>
+            <Ionicons name="people-outline" size={12} color="#64748B" />
+            <Text style={styles.coordText}>আয়োজনে: {item.coordinator}</Text>
           </View>
         </View>
 
         {/* Capacity Bar */}
         <View style={styles.capacitySection}>
           <View style={styles.capacityLabels}>
-            <Text style={[styles.capacityTitle, { color: theme.textSecondary }]}>
-              স্লট ধারণক্ষমতা
-            </Text>
-            <Text style={[styles.capacityValue, { color: theme.primary }]}>
+            <Text style={styles.capacityTitle}>স্লট সক্ষমতা</Text>
+            <Text style={styles.capacityValue}>
               {item.slotsRemaining} টি বাকি ({bookedPercent}% বুকড)
             </Text>
           </View>
-          <View style={[styles.progressTrack, { backgroundColor: theme.backgroundElement }]}>
+          <View style={styles.progressTrack}>
             <View
               style={[
                 styles.progressBar,
                 {
                   width: `${bookedPercent}%`,
-                  backgroundColor: bookedPercent > 80 ? theme.primary : theme.secondary,
+                  backgroundColor: bookedPercent > 80 ? '#DC2626' : '#0284C7',
                 },
               ]}
             />
@@ -133,22 +125,19 @@ export default function DirectoryAndDrivesScreen() {
         <TouchableOpacity
           style={[
             styles.bookBtn,
-            {
-              backgroundColor: item.isBooked ? theme.backgroundElement : theme.primary,
-              borderColor: item.isBooked ? theme.cardBorder : theme.primary,
-            },
+            item.isBooked ? styles.bookBtnCancel : styles.bookBtnActive,
           ]}
           activeOpacity={0.88}
           onPress={() => handleBooking(item)}>
           <Ionicons
             name={item.isBooked ? 'close-circle-outline' : 'calendar-outline'}
-            size={16}
-            color={item.isBooked ? theme.textSecondary : '#FFFFFF'}
+            size={14}
+            color={item.isBooked ? '#64748B' : '#FFFFFF'}
           />
           <Text
             style={[
               styles.bookBtnText,
-              { color: item.isBooked ? theme.textSecondary : '#FFFFFF' },
+              { color: item.isBooked ? '#64748B' : '#FFFFFF' },
             ]}>
             {item.isBooked ? 'স্লট বাতিল করুন' : 'রক্তদানের স্লট বুক করুন'}
           </Text>
@@ -158,37 +147,31 @@ export default function DirectoryAndDrivesScreen() {
   };
 
   return (
-    <View style={[styles.screen, { backgroundColor: theme.background }]}>
+    <View style={styles.screen}>
       <CampusHeader
         title="সেতু • ডোনার ও ক্যাম্প"
-        subtitle="জাহাঙ্গীরনগর বিশ্ববিদ্যালয় রক্তদাতা ডিরেক্টরি ও ইভেন্ট"
+        subtitle="জাহাঙ্গীরনগর বিশ্ববিদ্যালয় রক্তদাতা তালিকা ও ইভেন্ট"
       />
 
       {/* Segment Switcher */}
-      <View style={[styles.segmentContainer, { backgroundColor: theme.card, borderBottomColor: theme.cardBorder }]}>
-        <View style={[styles.segmentTrack, { backgroundColor: theme.backgroundElement }]}>
+      <View style={styles.segmentContainer}>
+        <View style={styles.segmentTrack}>
           <TouchableOpacity
             style={[
               styles.segmentBtn,
-              activeTab === 'donors' && {
-                backgroundColor: theme.card,
-                shadowColor: '#000000',
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.1,
-                shadowRadius: 2,
-                elevation: 2,
-              },
+              activeTab === 'donors' && styles.segmentBtnActive,
             ]}
+            activeOpacity={0.8}
             onPress={() => setActiveTab('donors')}>
             <Ionicons
               name="people"
-              size={15}
-              color={activeTab === 'donors' ? theme.primary : theme.textSecondary}
+              size={13}
+              color={activeTab === 'donors' ? '#DC2626' : '#64748B'}
             />
             <Text
               style={[
                 styles.segmentText,
-                { color: activeTab === 'donors' ? theme.primary : theme.textSecondary },
+                { color: activeTab === 'donors' ? '#DC2626' : '#64748B' },
               ]}>
               রক্তদাতা তালিকা ({donors.length})
             </Text>
@@ -197,25 +180,19 @@ export default function DirectoryAndDrivesScreen() {
           <TouchableOpacity
             style={[
               styles.segmentBtn,
-              activeTab === 'drives' && {
-                backgroundColor: theme.card,
-                shadowColor: '#000000',
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.1,
-                shadowRadius: 2,
-                elevation: 2,
-              },
+              activeTab === 'drives' && styles.segmentBtnActive,
             ]}
+            activeOpacity={0.8}
             onPress={() => setActiveTab('drives')}>
             <Ionicons
               name="calendar"
-              size={15}
-              color={activeTab === 'drives' ? theme.primary : theme.textSecondary}
+              size={13}
+              color={activeTab === 'drives' ? '#DC2626' : '#64748B'}
             />
             <Text
               style={[
                 styles.segmentText,
-                { color: activeTab === 'drives' ? theme.primary : theme.textSecondary },
+                { color: activeTab === 'drives' ? '#DC2626' : '#64748B' },
               ]}>
               ক্যাম্পাস ক্যাম্প ({drives.length})
             </Text>
@@ -226,31 +203,34 @@ export default function DirectoryAndDrivesScreen() {
       {activeTab === 'donors' ? (
         <View style={styles.donorsSection}>
           {/* Search bar & Filters */}
-          <View style={[styles.searchFilterBar, { backgroundColor: theme.card, borderBottomColor: theme.cardBorder }]}>
-            <View style={[styles.searchBox, { backgroundColor: theme.backgroundElement, borderColor: theme.cardBorder }]}>
-              <Ionicons name="search" size={16} color={theme.textSecondary} />
+          <View style={styles.searchFilterBar}>
+            <View style={styles.searchBox}>
+              <Ionicons name="search" size={14} color="#94A3B8" />
               <TextInput
-                style={[styles.searchInput, { color: theme.text }]}
-                placeholder="নাম, বিভাগ, হল বা ব্লাড গ্রুপ দিয়ে খুঁজুন..."
-                placeholderTextColor={theme.textSecondary}
+                style={styles.searchInput}
+                placeholder="নাম, বিভাগ, হল বা গ্রুপ দিয়ে খুঁজুন..."
+                placeholderTextColor="#94A3B8"
                 value={searchQuery}
                 onChangeText={setSearchQuery}
               />
               {searchQuery.length > 0 && (
                 <TouchableOpacity onPress={() => setSearchQuery('')}>
-                  <Ionicons name="close-circle" size={16} color={theme.textSecondary} />
+                  <Ionicons name="close-circle" size={15} color="#94A3B8" />
                 </TouchableOpacity>
               )}
             </View>
 
             {/* Role Filter Chips */}
-            <View style={styles.roleChipsScroll}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.filterRowScroll}>
               {(
                 [
                   { id: 'all', label: 'সকল' },
                   { id: 'student', label: '🎓 শিক্ষার্থী' },
                   { id: 'teacher', label: '🏛️ শিক্ষক' },
-                  { id: 'staff', label: '🏢 কর্মকর্তা/কর্মচারী' },
+                  { id: 'staff', label: '🏢 কর্মকর্তা' },
                 ] as const
               ).map(r => {
                 const isSel = selectedRole === r.id;
@@ -258,40 +238,39 @@ export default function DirectoryAndDrivesScreen() {
                   <TouchableOpacity
                     key={r.id}
                     style={[
-                      styles.roleFilterChip,
-                      {
-                        backgroundColor: isSel ? theme.primary : theme.backgroundElement,
-                        borderColor: isSel ? theme.primary : theme.cardBorder,
-                      },
+                      styles.filterChip,
+                      isSel && styles.filterChipActive,
                     ]}
+                    activeOpacity={0.7}
                     onPress={() => setSelectedRole(r.id)}>
                     <Text
                       style={[
-                        styles.roleFilterText,
-                        { color: isSel ? '#FFFFFF' : theme.textSecondary },
+                        styles.filterChipText,
+                        isSel && styles.filterChipTextActive,
                       ]}>
                       {r.label}
                     </Text>
                   </TouchableOpacity>
                 );
               })}
-            </View>
+            </ScrollView>
 
             {/* Blood Group Chips */}
-            <View style={styles.bloodChipsRow}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.filterRowScroll}>
               <TouchableOpacity
                 style={[
-                  styles.bloodGroupChip,
-                  {
-                    backgroundColor: selectedBlood === 'all' ? theme.primaryContainer : theme.backgroundElement,
-                    borderColor: selectedBlood === 'all' ? theme.primary : theme.cardBorder,
-                  },
+                  styles.bloodChip,
+                  selectedBlood === 'all' && styles.bloodChipActive,
                 ]}
+                activeOpacity={0.7}
                 onPress={() => setSelectedBlood('all')}>
                 <Text
                   style={[
                     styles.bloodChipText,
-                    { color: selectedBlood === 'all' ? theme.primary : theme.textSecondary },
+                    selectedBlood === 'all' && styles.bloodChipTextActive,
                   ]}>
                   সকল গ্রুপ
                 </Text>
@@ -303,24 +282,22 @@ export default function DirectoryAndDrivesScreen() {
                   <TouchableOpacity
                     key={bg}
                     style={[
-                      styles.bloodGroupChip,
-                      {
-                        backgroundColor: isSel ? theme.primary : theme.backgroundElement,
-                        borderColor: isSel ? theme.primary : theme.cardBorder,
-                      },
+                      styles.bloodChip,
+                      isSel && styles.bloodChipActive,
                     ]}
+                    activeOpacity={0.7}
                     onPress={() => setSelectedBlood(isSel ? 'all' : bg)}>
                     <Text
                       style={[
                         styles.bloodChipText,
-                        { color: isSel ? '#FFFFFF' : theme.textSecondary },
+                        isSel && styles.bloodChipTextActive,
                       ]}>
                       {bg}
                     </Text>
                   </TouchableOpacity>
                 );
               })}
-            </View>
+            </ScrollView>
           </View>
 
           {/* Donors List */}
@@ -329,11 +306,12 @@ export default function DirectoryAndDrivesScreen() {
             keyExtractor={item => item.id}
             renderItem={({ item }) => <DonorCard donor={item} />}
             contentContainerStyle={[styles.listContent, { paddingBottom: bottomPadding }]}
+            showsVerticalScrollIndicator={false}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <MaterialCommunityIcons name="account-search-outline" size={54} color={theme.cardBorder} />
-                <Text style={[styles.emptyTitle, { color: theme.text }]}>কোনো রক্তদাতা মেলেনি</Text>
-                <Text style={[styles.emptySub, { color: theme.textSecondary }]}>
+                <MaterialCommunityIcons name="account-search-outline" size={48} color="#CBD5E1" />
+                <Text style={styles.emptyTitle}>কোনো রক্তদাতা মেলেনি</Text>
+                <Text style={styles.emptySub}>
                   অন্য কোনো রক্তের গ্রুপ বা বিভাগ দিয়ে সার্চ করে দেখুন।
                 </Text>
               </View>
@@ -346,6 +324,7 @@ export default function DirectoryAndDrivesScreen() {
           keyExtractor={item => item.id}
           renderItem={renderDriveItem}
           contentContainerStyle={[styles.listContent, { paddingBottom: bottomPadding }]}
+          showsVerticalScrollIndicator={false}
         />
       )}
     </View>
@@ -355,99 +334,138 @@ export default function DirectoryAndDrivesScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
+    backgroundColor: '#F8FAFC',
   },
   segmentContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 0.5,
+    borderBottomColor: '#E2E8F0',
   },
   segmentTrack: {
     flexDirection: 'row',
-    borderRadius: 10,
-    padding: 3,
+    borderRadius: 8,
+    backgroundColor: '#F1F5F9',
+    padding: 2,
   },
   segmentBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 8,
-    borderRadius: 8,
+    gap: 5,
+    paddingVertical: 6,
+    borderRadius: 7,
+  },
+  segmentBtnActive: {
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 2,
   },
   segmentText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '800',
   },
   donorsSection: {
     flex: 1,
   },
   searchFilterBar: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    gap: 8,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderBottomWidth: 0.5,
+    borderBottomColor: '#E2E8F0',
+    gap: 7,
   },
   searchBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
     paddingHorizontal: 10,
-    height: 40,
-    borderRadius: 10,
+    height: 34,
+    borderRadius: 8,
     borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#F8FAFC',
   },
   searchInput: {
     flex: 1,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  roleChipsScroll: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    flexWrap: 'wrap',
-  },
-  roleFilterChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  roleFilterText: {
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: '600',
+    color: '#0F172A',
   },
-  bloodChipsRow: {
+  filterRowScroll: {
+    gap: 5,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    flexWrap: 'wrap',
   },
-  bloodGroupChip: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+  filterChip: {
+    paddingHorizontal: 9,
+    height: 25,
     borderRadius: 6,
-    borderWidth: 1,
+    backgroundColor: '#F1F5F9',
+    borderWidth: 0.8,
+    borderColor: '#E2E8F0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  filterChipActive: {
+    backgroundColor: '#0F172A',
+    borderColor: '#0F172A',
+  },
+  filterChipText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#64748B',
+  },
+  filterChipTextActive: {
+    color: '#FFFFFF',
+  },
+  bloodChip: {
+    paddingHorizontal: 8,
+    height: 24,
+    borderRadius: 5,
+    backgroundColor: '#F1F5F9',
+    borderWidth: 0.8,
+    borderColor: '#E2E8F0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  bloodChipActive: {
+    backgroundColor: '#DC2626',
+    borderColor: '#DC2626',
   },
   bloodChipText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '800',
+    color: '#64748B',
+  },
+  bloodChipTextActive: {
+    color: '#FFFFFF',
   },
   listContent: {
-    padding: 16,
-    gap: 12,
+    padding: 14,
+    gap: 10,
   },
   driveCard: {
-    padding: 16,
-    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    padding: 12,
     borderWidth: 1,
-    gap: 12,
-    shadowColor: '#000000',
+    borderColor: '#E2E8F0',
+    gap: 10,
+    shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 6,
     elevation: 2,
+  },
+  driveCardBooked: {
+    borderColor: '#86EFAC',
   },
   driveHeader: {
     flexDirection: 'row',
@@ -457,61 +475,70 @@ const styles = StyleSheet.create({
   driveHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   datePill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
+    backgroundColor: '#FEF2F2',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 5,
   },
   dateText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '800',
+    color: '#DC2626',
   },
   timeText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
+    color: '#64748B',
   },
   bookedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
+    gap: 3,
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 5,
   },
   bookedText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '800',
+    color: '#16A34A',
   },
   driveTitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '800',
+    color: '#0F172A',
     letterSpacing: -0.2,
   },
   venueBox: {
-    padding: 10,
-    borderRadius: 10,
-    gap: 4,
+    backgroundColor: '#F8FAFC',
+    padding: 8,
+    borderRadius: 8,
+    gap: 3,
   },
   venueRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 5,
   },
   venueText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
+    color: '#334155',
   },
   coordText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '500',
+    color: '#64748B',
   },
   capacitySection: {
-    gap: 6,
+    gap: 4,
   },
   capacityLabels: {
     flexDirection: 'row',
@@ -519,49 +546,61 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   capacityTitle: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
+    color: '#64748B',
   },
   capacityValue: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '800',
+    color: '#DC2626',
   },
   progressTrack: {
-    height: 6,
-    borderRadius: 3,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: '#F1F5F9',
     overflow: 'hidden',
   },
   progressBar: {
     height: '100%',
-    borderRadius: 3,
+    borderRadius: 2.5,
   },
   bookBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 11,
-    borderRadius: 10,
-    borderWidth: 1,
+    gap: 5,
+    height: 32,
+    borderRadius: 7,
+  },
+  bookBtnActive: {
+    backgroundColor: '#DC2626',
+  },
+  bookBtnCancel: {
+    backgroundColor: '#F1F5F9',
+    borderWidth: 0.8,
+    borderColor: '#E2E8F0',
   },
   bookBtnText: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: '800',
   },
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 24,
-    gap: 8,
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+    gap: 6,
   },
   emptyTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '800',
+    color: '#475569',
   },
   emptySub: {
-    fontSize: 13,
+    fontSize: 11,
     textAlign: 'center',
-    lineHeight: 19,
+    color: '#94A3B8',
+    lineHeight: 16,
   },
 });

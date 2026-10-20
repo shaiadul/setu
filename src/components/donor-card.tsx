@@ -40,18 +40,18 @@ export function DonorCard({ donor }: DonorCardProps) {
   };
 
   return (
-    <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
-      {/* Top Details */}
+    <View style={[styles.card, { backgroundColor: '#FFFFFF', borderColor: '#E2E8F0' }]}>
+      {/* Header Info */}
       <View style={styles.cardHeader}>
         <BloodGroupBadge bloodType={donor.bloodType} size="sm" highlightUniversal />
 
         <View style={styles.metaCol}>
           <View style={styles.nameRow}>
-            <Text style={[styles.donorName, { color: theme.text }]} numberOfLines={1}>
+            <Text style={styles.donorName} numberOfLines={1}>
               {donor.name}
             </Text>
             {donor.verifiedJu && (
-              <Ionicons name="checkmark-circle" size={15} color={theme.secondary} />
+              <Ionicons name="checkmark-circle" size={14} color="#0284C7" />
             )}
           </View>
 
@@ -61,58 +61,58 @@ export function DonorCard({ donor }: DonorCardProps) {
               style={[
                 styles.availPill,
                 {
-                  backgroundColor: donor.isAvailable ? theme.successLight : theme.backgroundElement,
-                  borderColor: donor.isAvailable ? theme.success : theme.cardBorder,
+                  backgroundColor: donor.isAvailable ? '#DCFCE7' : '#F1F5F9',
+                  borderColor: donor.isAvailable ? '#86EFAC' : '#E2E8F0',
                 },
               ]}>
               <View
                 style={[
                   styles.availDot,
-                  { backgroundColor: donor.isAvailable ? theme.success : theme.textSecondary },
+                  { backgroundColor: donor.isAvailable ? '#16A34A' : '#94A3B8' },
                 ]}
               />
               <Text
                 style={[
                   styles.availText,
-                  { color: donor.isAvailable ? theme.success : theme.textSecondary },
+                  { color: donor.isAvailable ? '#15803D' : '#64748B' },
                 ]}>
-                {donor.isAvailable ? 'প্রস্তুত' : 'বিশ্রাম কাল'}
+                {donor.isAvailable ? 'রক্তদানে প্রস্তুত' : 'বিশ্রাম কাল'}
               </Text>
             </View>
           </View>
         </View>
 
-        {/* Contact Actions */}
-        <View style={styles.actionCol}>
+        {/* Compact Action Buttons */}
+        <View style={styles.actionsRow}>
           <TouchableOpacity
-            style={[styles.callBtn, { backgroundColor: theme.primary }]}
+            style={styles.callBtn}
             activeOpacity={0.8}
             onPress={handleCall}>
-            <Ionicons name="call" size={14} color="#FFFFFF" />
+            <Ionicons name="call" size={12} color="#FFFFFF" />
             <Text style={styles.callBtnText}>কল</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.smsBtn, { backgroundColor: theme.secondaryLight, borderColor: theme.secondary }]}
+            style={styles.smsBtn}
             activeOpacity={0.8}
             onPress={handleSms}>
-            <Ionicons name="chatbubble-outline" size={14} color={theme.secondaryDark} />
+            <Ionicons name="chatbubble-ellipses-outline" size={13} color="#0284C7" />
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* JU Details */}
-      <View style={[styles.infoRow, { backgroundColor: theme.backgroundElement }]}>
-        <View style={styles.infoItem}>
-          <Ionicons name="business-outline" size={12} color={theme.textSecondary} />
-          <Text style={[styles.infoItemText, { color: theme.textSecondary }]} numberOfLines={1}>
+      {/* JU Dept & Hall Details */}
+      <View style={styles.infoStrip}>
+        <View style={styles.infoCol}>
+          <Ionicons name="school-outline" size={12} color="#64748B" />
+          <Text style={styles.infoText} numberOfLines={1}>
             {donor.departmentOrOffice}
           </Text>
         </View>
 
-        <View style={styles.infoItem}>
-          <Ionicons name="location-outline" size={12} color={theme.textSecondary} />
-          <Text style={[styles.infoItemText, { color: theme.textSecondary }]} numberOfLines={1}>
+        <View style={styles.infoCol}>
+          <Ionicons name="location-outline" size={12} color="#64748B" />
+          <Text style={styles.infoText} numberOfLines={1}>
             {donor.hallOrResidence}
           </Text>
         </View>
@@ -120,10 +120,10 @@ export function DonorCard({ donor }: DonorCardProps) {
 
       {/* Footer Stats */}
       <View style={styles.footerRow}>
-        <Text style={[styles.footerStat, { color: theme.textSecondary }]}>
-          মোট রক্তদান: <Text style={{ color: theme.primary, fontWeight: '800' }}>{donor.totalDonations} বার</Text>
+        <Text style={styles.footerStat}>
+          মোট রক্তদান: <Text style={styles.statBold}>{donor.totalDonations} বার</Text>
         </Text>
-        <Text style={[styles.footerStat, { color: theme.textSecondary }]}>
+        <Text style={styles.footerStat}>
           সর্বশেষ: {donor.lastDonationDate}
         </Text>
       </View>
@@ -133,13 +133,13 @@ export function DonorCard({ donor }: DonorCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    padding: 14,
-    borderRadius: 16,
+    padding: 12,
+    borderRadius: 14,
     borderWidth: 1,
-    gap: 10,
-    shadowColor: '#000000',
+    gap: 8,
+    shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
+    shadowOpacity: 0.04,
     shadowRadius: 6,
     elevation: 2,
   },
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
   },
   metaCol: {
     flex: 1,
-    gap: 4,
+    gap: 3,
   },
   nameRow: {
     flexDirection: 'row',
@@ -160,12 +160,14 @@ const styles = StyleSheet.create({
   donorName: {
     fontSize: 14,
     fontWeight: '800',
+    color: '#0F172A',
     letterSpacing: -0.2,
   },
   badgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    flexWrap: 'wrap',
   },
   availPill: {
     flexDirection: 'row',
@@ -174,64 +176,80 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
-    borderWidth: 1,
+    borderWidth: 0.5,
   },
   availDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
   },
   availText: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '700',
   },
-  actionCol: {
+  actionsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 5,
   },
   callBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    backgroundColor: '#DC2626',
     paddingHorizontal: 10,
-    paddingVertical: 7,
-    borderRadius: 8,
+    height: 28,
+    borderRadius: 7,
+    justifyContent: 'center',
   },
   callBtnText: {
-    color: '#FFFFFF',
     fontSize: 11,
     fontWeight: '800',
+    color: '#FFFFFF',
   },
   smsBtn: {
-    padding: 7,
-    borderRadius: 8,
-    borderWidth: 1,
+    width: 28,
+    height: 28,
+    borderRadius: 7,
+    backgroundColor: '#F0F9FF',
+    borderWidth: 0.8,
+    borderColor: '#BAE6FD',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  infoRow: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-    gap: 4,
-  },
-  infoItem: {
+  infoStrip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 12,
+    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 8,
   },
-  infoItemText: {
-    fontSize: 11,
-    fontWeight: '600',
+  infoCol: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     flex: 1,
+  },
+  infoText: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#475569',
   },
   footerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 2,
+    paddingTop: 2,
   },
   footerStat: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '500',
+    color: '#64748B',
+  },
+  statBold: {
+    color: '#DC2626',
+    fontWeight: '800',
   },
 });

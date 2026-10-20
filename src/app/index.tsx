@@ -53,9 +53,6 @@ export default function FeedScreen() {
     refreshAll,
   } = useBlood();
 
-  const [activeFilter, setActiveFilter] = useState<"all" | "Code Red" | JuRole>(
-    "all",
-  );
   const [selectedBlood, setSelectedBlood] = useState<"all" | BloodGroup>("all");
   const [refreshing, setRefreshing] = useState(false);
 
@@ -65,18 +62,14 @@ export default function FeedScreen() {
     setRefreshing(false);
   };
 
+  const getBloodGroupCount = (bg: BloodGroup) => {
+    return requests.filter((r) => r.bloodType === bg).length;
+  };
+
   const filteredRequests = requests.filter((req) => {
-    if (activeFilter === "Code Red" && req.urgency !== "Code Red") return false;
-    if (
-      (activeFilter === "student" ||
-        activeFilter === "teacher" ||
-        activeFilter === "staff") &&
-      req.requesterRole !== activeFilter
-    ) {
+    if (selectedBlood !== "all" && req.bloodType !== selectedBlood) {
       return false;
     }
-    if (selectedBlood !== "all" && req.bloodType !== selectedBlood)
-      return false;
     return true;
   });
 
@@ -118,7 +111,6 @@ export default function FeedScreen() {
   };
 
   const bottomPadding = 56 + Math.max(insets.bottom, 12);
-  const codeRedTotal = requests.filter((r) => r.urgency === "Code Red").length;
 
   const urgencyColor = (u: string) => {
     if (u === "Code Red") {
@@ -243,117 +235,161 @@ export default function FeedScreen() {
         </View>
       </View>
 
-      {/* Primary Role/Urgency Filter Horizontal Scroll */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterScrollTrack}
-      >
-        {(
-          [
-            { id: "all", label: "সব অনুরোধ", count: requests.length },
-            { id: "Code Red", label: "🔴 কোড রেড", count: codeRedTotal },
-            { id: "student", label: "🎓 শিক্ষার্থী", count: undefined },
-            { id: "teacher", label: "🏛️ শিক্ষক", count: undefined },
-            { id: "staff", label: "🏢 কর্মকর্তা", count: undefined },
-          ] as const
-        ).map((f) => {
-          const isActive = activeFilter === f.id;
-          const isRed = f.id === "Code Red";
-          return (
+      {/* Modern Blood Group Filter Section */}
+      <View style={styles.bloodSectionContainer}>
+        {/* Section Header */}
+        <View style={styles.bloodSectionHeader}>
+          <View style={styles.bloodHeaderTitleRow}>
+            <MaterialCommunityIcons name="water" size={15} color="#DC2626" />
+            <Text style={styles.bloodSectionTitle}>রক্তের গ্রুপ নির্বাচন</Text>
+            {selectedBlood !== "all" && (
+              <View style={styles.selectedPillBadge}>
+                <Text style={styles.selectedPillText}>{selectedBlood}</Text>
+              </View>
+            )}
+          </View>
+
+          {selectedBlood !== "all" ? (
             <TouchableOpacity
-              key={f.id}
-              style={[
-                styles.filterPill,
-                isActive &&
-                  (isRed
-                    ? styles.filterPillRedActive
-                    : styles.filterPillActive),
-              ]}
+              onPress={() => setSelectedBlood("all")}
               activeOpacity={0.7}
-              onPress={() => setActiveFilter(f.id as typeof activeFilter)}
+              style={styles.clearFilterBtn}
+            >
+              <Ionicons name="close-circle-outline" size={12} color="#DC2626" />
+              <Text style={styles.clearFilterText}>সব দেখুন</Text>
+            </TouchableOpacity>
+          ) : (
+            <Text style={styles.allCountText}>মোট {requests.length}টি সক্রিয় অনুরোধ</Text>
+          )}
+        </View>
+
+        {/* Modern Blood Tokens Horizontal Track */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.bloodCardsScrollTrack}
+        >
+          {/* "All" Card */}
+          <TouchableOpacity
+            style={[
+              styles.bloodCard,
+              selectedBlood === "all" && styles.bloodCardActive,
+            ]}
+            activeOpacity={0.8}
+            onPress={() => setSelectedBlood("all")}
+          >
+            <View style={styles.bloodCardIconWrap}>
+              <MaterialCommunityIcons
+                name="water-outline"
+                size={13}
+                color={selectedBlood === "all" ? "#FFFFFF" : "#64748B"}
+              />
+            </View>
+            <Text
+              style={[
+                styles.bloodCardLabel,
+                selectedBlood === "all" && styles.bloodCardLabelActive,
+              ]}
+            >
+              সব
+            </Text>
+            <View
+              style={[
+                styles.cardBadge,
+                selectedBlood === "all"
+                  ? styles.cardBadgeActive
+                  : styles.cardBadgeNeutral,
+              ]}
             >
               <Text
-                style={[styles.filterText, isActive && styles.filterTextActive]}
+                style={[
+                  styles.cardBadgeText,
+                  selectedBlood === "all" && styles.cardBadgeTextActive,
+                ]}
               >
-                {f.label}
+                {requests.length}
               </Text>
-              {f.count !== undefined && f.count > 0 && (
+            </View>
+          </TouchableOpacity>
+
+          {/* Individual Blood Group Cards */}
+          {BLOOD_GROUPS.map((bg) => {
+            const isSel = selectedBlood === bg;
+            const count = getBloodGroupCount(bg);
+            const hasRequests = count > 0;
+            const isRare = bg === "O-" || bg === "B-" || bg === "AB-";
+
+            return (
+              <TouchableOpacity
+                key={bg}
+                style={[
+                  styles.bloodCard,
+                  isSel && styles.bloodCardActive,
+                  !isSel && hasRequests && styles.bloodCardHasRequests,
+                ]}
+                activeOpacity={0.8}
+                onPress={() => setSelectedBlood(isSel ? "all" : bg)}
+              >
+                {isRare && (
+                  <View
+                    style={[
+                      styles.rareDot,
+                      isSel && styles.rareDotActive,
+                    ]}
+                  />
+                )}
+
+                <View style={styles.bloodCardIconWrap}>
+                  <MaterialCommunityIcons
+                    name="water"
+                    size={12}
+                    color={
+                      isSel
+                        ? "#FFFFFF"
+                        : hasRequests
+                          ? "#DC2626"
+                          : "#94A3B8"
+                    }
+                  />
+                </View>
+
+                <Text
+                  style={[
+                    styles.bloodCardLabel,
+                    isSel && styles.bloodCardLabelActive,
+                  ]}
+                >
+                  {bg}
+                </Text>
+
                 <View
                   style={[
-                    styles.countBadge,
-                    isActive &&
-                      (isRed
-                        ? styles.countBadgeRedActive
-                        : styles.countBadgeActive),
+                    styles.cardBadge,
+                    isSel
+                      ? styles.cardBadgeActive
+                      : hasRequests
+                        ? styles.cardBadgeUrgent
+                        : styles.cardBadgeMuted,
                   ]}
                 >
                   <Text
                     style={[
-                      styles.countText,
-                      isActive &&
-                        (isRed
-                          ? styles.countTextRedActive
-                          : styles.countTextActive),
+                      styles.cardBadgeText,
+                      isSel
+                        ? styles.cardBadgeTextActive
+                        : hasRequests
+                          ? styles.cardBadgeTextUrgent
+                          : styles.cardBadgeTextMuted,
                     ]}
                   >
-                    {f.count}
+                    {count > 0 ? `${count}টি` : "০"}
                   </Text>
                 </View>
-              )}
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
-
-      {/* Secondary Blood Group Filter Horizontal Scroll */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.bloodFilterScrollTrack}
-      >
-        <TouchableOpacity
-          style={[
-            styles.bloodFilterChip,
-            selectedBlood === "all" && styles.bloodFilterChipActive,
-          ]}
-          activeOpacity={0.7}
-          onPress={() => setSelectedBlood("all")}
-        >
-          <Text
-            style={[
-              styles.bloodFilterText,
-              selectedBlood === "all" && styles.bloodFilterTextActive,
-            ]}
-          >
-            সকল গ্রুপ
-          </Text>
-        </TouchableOpacity>
-
-        {BLOOD_GROUPS.map((bg) => {
-          const isSel = selectedBlood === bg;
-          return (
-            <TouchableOpacity
-              key={bg}
-              style={[
-                styles.bloodFilterChip,
-                isSel && styles.bloodFilterChipActive,
-              ]}
-              activeOpacity={0.7}
-              onPress={() => setSelectedBlood(isSel ? "all" : bg)}
-            >
-              <Text
-                style={[
-                  styles.bloodFilterText,
-                  isSel && styles.bloodFilterTextActive,
-                ]}
-              >
-                {bg}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
     </View>
   );
 
@@ -549,15 +585,31 @@ export default function FeedScreen() {
           <View style={styles.emptyContainer}>
             <View style={styles.emptyIconCircle}>
               <MaterialCommunityIcons
-                name="heart-pulse"
+                name="water-off-outline"
                 size={32}
                 color="#CBD5E1"
               />
             </View>
-            <Text style={styles.emptyTitle}>কোনো রক্তের অনুরোধ নেই</Text>
-            <Text style={styles.emptySub}>
-              এই ফিল্টারে বর্তমানে কোনো সক্রিয় রক্তের অনুরোধ নেই।
+            <Text style={styles.emptyTitle}>
+              {selectedBlood === "all"
+                ? "কোনো রক্তের অনুরোধ নেই"
+                : `${selectedBlood} গ্রুপের কোনো অনুরোধ নেই`}
             </Text>
+            <Text style={styles.emptySub}>
+              {selectedBlood === "all"
+                ? "বর্তমানে কোনো সক্রিয় রক্তের অনুরোধ নেই।"
+                : `এই মুহূর্তে ${selectedBlood} গ্রুপের সক্রিয় কোনো রক্তের অনুরোধ নেই।`}
+            </Text>
+            {selectedBlood !== "all" && (
+              <TouchableOpacity
+                style={styles.emptyResetBtn}
+                onPress={() => setSelectedBlood("all")}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="refresh" size={13} color="#FFFFFF" />
+                <Text style={styles.emptyResetBtnText}>সকল রক্তের অনুরোধ দেখুন</Text>
+              </TouchableOpacity>
+            )}
           </View>
         }
       />
@@ -773,91 +825,155 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#DC2626",
   },
-  filterScrollTrack: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingVertical: 2,
-  },
-  filterPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    paddingHorizontal: 12,
-    height: 30,
-    borderRadius: 15,
+  bloodSectionContainer: {
     backgroundColor: "#FFFFFF",
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: "#E2E8F0",
+    paddingVertical: 10,
+    gap: 8,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 1,
   },
-  filterPillActive: {
-    backgroundColor: "#0F172A",
-    borderColor: "#0F172A",
-  },
-  filterPillRedActive: {
-    backgroundColor: "#DC2626",
-    borderColor: "#DC2626",
-  },
-  filterText: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: "#475569",
-  },
-  filterTextActive: {
-    color: "#FFFFFF",
-  },
-  countBadge: {
-    backgroundColor: "#F1F5F9",
-    paddingHorizontal: 5,
-    height: 16,
-    borderRadius: 8,
-    justifyContent: "center",
+  bloodSectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
+    paddingHorizontal: 12,
   },
-  countBadgeActive: {
-    backgroundColor: "rgba(255, 255, 255, 0.25)",
-  },
-  countBadgeRedActive: {
-    backgroundColor: "rgba(255, 255, 255, 0.3)",
-  },
-  countText: {
-    fontSize: 9,
-    fontWeight: "900",
-    color: "#475569",
-  },
-  countTextActive: {
-    color: "#FFFFFF",
-  },
-  countTextRedActive: {
-    color: "#FFFFFF",
-  },
-  bloodFilterScrollTrack: {
+  bloodHeaderTitleRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    paddingVertical: 2,
   },
-  bloodFilterChip: {
-    paddingHorizontal: 9,
-    height: 25,
-    borderRadius: 6,
-    backgroundColor: "#FFFFFF",
-    borderWidth: 0.8,
-    borderColor: "#E2E8F0",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  bloodFilterChipActive: {
-    backgroundColor: "#DC2626",
-    borderColor: "#DC2626",
-  },
-  bloodFilterText: {
-    fontSize: 10,
+  bloodSectionTitle: {
+    fontSize: 12,
     fontWeight: "800",
+    color: "#1E293B",
+  },
+  selectedPillBadge: {
+    backgroundColor: "#DC2626",
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 4,
+  },
+  selectedPillText: {
+    fontSize: 10,
+    fontWeight: "900",
+    color: "#FFFFFF",
+  },
+  clearFilterBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    backgroundColor: "#FEF2F2",
+    paddingHorizontal: 8,
+    paddingVertical: 2.5,
+    borderRadius: 6,
+    borderWidth: 0.8,
+    borderColor: "#FECACA",
+  },
+  clearFilterText: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: "#DC2626",
+  },
+  allCountText: {
+    fontSize: 10,
+    fontWeight: "600",
     color: "#64748B",
   },
-  bloodFilterTextActive: {
+  bloodCardsScrollTrack: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
+    paddingHorizontal: 10,
+    paddingVertical: 2,
+  },
+  bloodCard: {
+    width: 54,
+    height: 62,
+    borderRadius: 12,
+    backgroundColor: "#F8FAFC",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 6,
+    position: "relative",
+  },
+  bloodCardActive: {
+    backgroundColor: "#DC2626",
+    borderColor: "#DC2626",
+    shadowColor: "#DC2626",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  bloodCardHasRequests: {
+    borderColor: "#FECACA",
+    backgroundColor: "#FFFFFF",
+  },
+  bloodCardIconWrap: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  bloodCardLabel: {
+    fontSize: 13,
+    fontWeight: "900",
+    color: "#0F172A",
+    letterSpacing: -0.2,
+  },
+  bloodCardLabelActive: {
     color: "#FFFFFF",
+  },
+  rareDot: {
+    position: "absolute",
+    top: 4,
+    right: 4,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "#DC2626",
+  },
+  rareDotActive: {
+    backgroundColor: "#FFFFFF",
+  },
+  cardBadge: {
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 4,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cardBadgeNeutral: {
+    backgroundColor: "#E2E8F0",
+  },
+  cardBadgeActive: {
+    backgroundColor: "rgba(255, 255, 255, 0.25)",
+  },
+  cardBadgeUrgent: {
+    backgroundColor: "#FEF2F2",
+  },
+  cardBadgeMuted: {
+    backgroundColor: "#F1F5F9",
+  },
+  cardBadgeText: {
+    fontSize: 9,
+    fontWeight: "800",
+  },
+  cardBadgeTextActive: {
+    color: "#FFFFFF",
+  },
+  cardBadgeTextUrgent: {
+    color: "#DC2626",
+  },
+  cardBadgeTextMuted: {
+    color: "#94A3B8",
   },
   feedCard: {
     backgroundColor: "#FFFFFF",
@@ -1089,6 +1205,7 @@ const styles = StyleSheet.create({
   emptyContainer: {
     alignItems: "center",
     paddingVertical: 40,
+    paddingHorizontal: 20,
     gap: 8,
   },
   emptyIconCircle: {
@@ -1103,10 +1220,28 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "800",
     color: "#475569",
+    textAlign: "center",
   },
   emptySub: {
     fontSize: 11,
     fontWeight: "500",
     color: "#94A3B8",
+    textAlign: "center",
+    lineHeight: 16,
+  },
+  emptyResetBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    backgroundColor: "#DC2626",
+    paddingHorizontal: 14,
+    height: 34,
+    borderRadius: 17,
+    marginTop: 6,
+  },
+  emptyResetBtnText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#FFFFFF",
   },
 });

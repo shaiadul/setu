@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -11,6 +11,7 @@ interface CampusHeaderProps {
   subtitle?: string;
   showBack?: boolean;
   onBack?: () => void;
+  hideIcons?: boolean;
   rightElement?: React.ReactNode;
 }
 
@@ -19,6 +20,7 @@ export function CampusHeader({
   subtitle,
   showBack,
   onBack,
+  hideIcons,
   rightElement,
 }: CampusHeaderProps) {
   const insets = useSafeAreaInsets();
@@ -81,9 +83,6 @@ export function CampusHeader({
         ) : (
           <View style={styles.brandCol}>
             <View style={styles.logoRow}>
-              <View style={styles.logoEmblem}>
-                <MaterialCommunityIcons name="water" size={14} color="#DC2626" />
-              </View>
               <Text style={styles.appName}>সেতু</Text>
               <View style={styles.livePill}>
                 <View style={styles.liveDot} />
@@ -97,36 +96,38 @@ export function CampusHeader({
         )}
 
         {/* Right Actions */}
-        <View style={styles.actionsRow}>
-          {rightElement ? (
-            rightElement
-          ) : (
-            <>
-              <TouchableOpacity
-                style={styles.iconCircleBtn}
-                activeOpacity={0.7}
-                onPress={() => setShowSplash(true)}>
-                <Ionicons name="help-buoy-outline" size={16} color="#FFFFFF" />
-              </TouchableOpacity>
+        {!hideIcons && (
+          <View style={styles.actionsRow}>
+            {rightElement ? (
+              rightElement
+            ) : (
+              <>
+                <TouchableOpacity
+                  style={styles.iconCircleBtn}
+                  activeOpacity={0.7}
+                  onPress={() => setShowSplash(true)}>
+                  <Ionicons name="help-buoy-outline" size={16} color="#FFFFFF" />
+                </TouchableOpacity>
 
-              <TouchableOpacity
-                style={styles.iconCircleBtn}
-                activeOpacity={0.7}
-                onPress={() => {
-                  if (codeRedCount > 0) {
-                    router.push('/');
-                  }
-                }}>
-                <Ionicons name="notifications-outline" size={16} color="#FFFFFF" />
-                {codeRedCount > 0 && (
-                  <View style={styles.badgePill}>
-                    <Text style={styles.badgeText}>{codeRedCount}</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            </>
-          )}
-        </View>
+                <TouchableOpacity
+                  style={styles.iconCircleBtn}
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    if (codeRedCount > 0) {
+                      router.push('/');
+                    }
+                  }}>
+                  <Ionicons name="notifications-outline" size={16} color="#FFFFFF" />
+                  {codeRedCount > 0 && (
+                    <View style={styles.badgePill}>
+                      <Text style={styles.badgeText}>{codeRedCount}</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        )}
       </View>
     </View>
   );
@@ -160,20 +161,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 7,
   },
-  logoEmblem: {
-    width: 24,
-    height: 24,
-    borderRadius: 7,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
   appName: {
-    fontSize: 21,
+    fontSize: 22,
     fontWeight: '900',
     color: '#FFFFFF',
     letterSpacing: 0.5,
@@ -183,7 +172,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingHorizontal: 6,
+    paddingHorizontal: 7,
     paddingVertical: 2,
     borderRadius: 8,
   },

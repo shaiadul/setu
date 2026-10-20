@@ -5,6 +5,7 @@ import {
   Linking,
   Platform,
   RefreshControl,
+  ScrollView,
   Share,
   StyleSheet,
   Text,
@@ -19,7 +20,9 @@ import { CampusHeader } from '@/components/campus-header';
 import { JuBadge } from '@/components/ju-badge';
 import { RequestTrackingModal } from '@/components/request-tracking-modal';
 import { useBlood } from '@/context/blood-context';
-import { BloodRequest, JuRole } from '@/types/blood';
+import { BloodGroup, BloodRequest, JuRole } from '@/types/blood';
+
+const BLOOD_GROUPS: BloodGroup[] = ['O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+'];
 
 export default function FeedScreen() {
   const insets = useSafeAreaInsets();
@@ -32,6 +35,7 @@ export default function FeedScreen() {
   } = useBlood();
 
   const [activeFilter, setActiveFilter] = useState<'all' | 'Code Red' | JuRole>('all');
+  const [selectedBlood, setSelectedBlood] = useState<'all' | BloodGroup>('all');
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = async () => {
@@ -41,10 +45,14 @@ export default function FeedScreen() {
   };
 
   const filteredRequests = requests.filter(req => {
-    if (activeFilter === 'Code Red') return req.urgency === 'Code Red';
-    if (activeFilter === 'student' || activeFilter === 'teacher' || activeFilter === 'staff') {
-      return req.requesterRole === activeFilter;
+    if (activeFilter === 'Code Red' && req.urgency !== 'Code Red') return false;
+    if (
+      (activeFilter === 'student' || activeFilter === 'teacher' || activeFilter === 'staff') &&
+      req.requesterRole !== activeFilter
+    ) {
+      return false;
     }
+    if (selectedBlood !== 'all' && req.bloodType !== selectedBlood) return false;
     return true;
   });
 
@@ -89,29 +97,29 @@ export default function FeedScreen() {
   const codeRedTotal = requests.filter(r => r.urgency === 'Code Red').length;
 
   const urgencyColor = (u: string) => {
-    if (u === 'Code Red') return { bg: '#FEF2F2', text: '#DC2626', dot: '#DC2626', border: '#FECACA' };
-    if (u === 'Urgent') return { bg: '#FFFBEB', text: '#D97706', dot: '#F59E0B', border: '#FDE68A' };
+    if (u === 'Code Red') {
+      return { bg: '#FEF2F2', text: '#DC2626', dot: '#DC2626', border: '#FECACA' };
+    }
+    if (u === 'Urgent') {
+      return { bg: '#FFFBEB', text: '#D97706', dot: '#F59E0B', border: '#FDE68A' };
+    }
     return { bg: '#F0F9FF', text: '#0284C7', dot: '#0EA5E9', border: '#BAE6FD' };
   };
 
   const renderHeader = () => (
     <View style={styles.headerBlock}>
-      {/* Live Campus Pulse Hero Card */}
+      {/* Live Campus Pulse Status Card */}
       <View style={styles.pulseCard}>
         <View style={styles.pulseTop}>
           <View style={styles.pulseLeft}>
             <View style={styles.pulseLiveDot} />
-            <Text style={styles.pulseHeading}>জাহাঙ্গীরনগর ব্লাড নেটওয়ার্ক</Text>
+            <Text style={styles.pulseHeading}>জাহাঙ্গীরনগর বিশ্ববিদ্যালয় লাইভ এসওএস</Text>
           </View>
           <View style={styles.pulseEtaBadge}>
-            <Ionicons name="flash" size={11} color="#DC2626" />
-            <Text style={styles.pulseEtaText}>গড় সাড়া: ৮ মি.</Text>
+            <Ionicons name="flash" size={10} color="#DC2626" />
+            <Text style={styles.pulseEtaText}>গড় সাড়া: ৮ মিনিট</Text>
           </View>
         </View>
-
-        <Text style={styles.pulseSub}>
-          ক্যাম্পাস মেডিকেল সেন্টার ও সাভারের হাসপাতালে জরুরি রক্তের প্রয়োজনে জাবি পরিবার প্রস্তুত
-        </Text>
 
         <View style={styles.pulseStatsRow}>
           <View style={styles.pulseStatItem}>
@@ -121,46 +129,109 @@ export default function FeedScreen() {
           <View style={styles.pulseStatDivider} />
           <View style={styles.pulseStatItem}>
             <Text style={styles.pulseStatNum}>{requests.length}</Text>
-            <Text style={styles.pulseStatLabel}>লাইভ অনুরোধ</Text>
+            <Text style={styles.pulseStatLabel}>মোট অনুরোধ</Text>
           </View>
           <View style={styles.pulseStatDivider} />
           <View style={styles.pulseStatItem}>
             <Text style={[styles.pulseStatNum, { color: '#16A34A' }]}>১৫+</Text>
-            <Text style={styles.pulseStatLabel}>অন-কল ডোনার</Text>
+            <Text style={styles.pulseStatLabel}>লাইভ ডোনার</Text>
           </View>
         </View>
       </View>
 
-      {/* Filter Pill Row */}
-      <View style={styles.filterBar}>
+      {/* Primary Role/Urgency Filter Horizontal Scroll */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filterScrollTrack}>
         {([
-          { id: 'all', label: 'সব অনুরোধ', icon: 'grid-outline' as const },
-          { id: 'Code Red', label: `🔴 জরুরি (${codeRedTotal})`, icon: undefined },
-          { id: 'student', label: 'শিক্ষার্থী', icon: 'school-outline' as const },
-          { id: 'teacher', label: 'শিক্ষক', icon: 'book-outline' as const },
-          { id: 'staff', label: 'কর্মকর্তা', icon: 'briefcase-outline' as const },
+          { id: 'all', label: 'সব অনুরোধ', count: requests.length },
+          { id: 'Code Red', label: '🔴 কোড রেড', count: codeRedTotal },
+          { id: 'student', label: '🎓 শিক্ষার্থী', count: undefined },
+          { id: 'teacher', label: '🏛️ শিক্ষক', count: undefined },
+          { id: 'staff', label: '🏢 কর্মকর্তা', count: undefined },
         ] as const).map(f => {
           const isActive = activeFilter === f.id;
+          const isRed = f.id === 'Code Red';
           return (
             <TouchableOpacity
               key={f.id}
-              style={[styles.filterPill, isActive && styles.filterPillActive]}
+              style={[
+                styles.filterPill,
+                isActive && (isRed ? styles.filterPillRedActive : styles.filterPillActive),
+              ]}
               activeOpacity={0.7}
               onPress={() => setActiveFilter(f.id as typeof activeFilter)}>
-              {f.icon && (
-                <Ionicons
-                  name={f.icon}
-                  size={12}
-                  color={isActive ? '#FFFFFF' : '#64748B'}
-                />
-              )}
-              <Text style={[styles.filterText, isActive && styles.filterTextActive]}>
+              <Text
+                style={[
+                  styles.filterText,
+                  isActive && styles.filterTextActive,
+                ]}>
                 {f.label}
+              </Text>
+              {f.count !== undefined && f.count > 0 && (
+                <View
+                  style={[
+                    styles.countBadge,
+                    isActive && (isRed ? styles.countBadgeRedActive : styles.countBadgeActive),
+                  ]}>
+                  <Text
+                    style={[
+                      styles.countText,
+                      isActive && (isRed ? styles.countTextRedActive : styles.countTextActive),
+                    ]}>
+                    {f.count}
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+
+      {/* Secondary Blood Group Filter Horizontal Scroll */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.bloodFilterScrollTrack}>
+        <TouchableOpacity
+          style={[
+            styles.bloodFilterChip,
+            selectedBlood === 'all' && styles.bloodFilterChipActive,
+          ]}
+          activeOpacity={0.7}
+          onPress={() => setSelectedBlood('all')}>
+          <Text
+            style={[
+              styles.bloodFilterText,
+              selectedBlood === 'all' && styles.bloodFilterTextActive,
+            ]}>
+            সকল গ্রুপ
+          </Text>
+        </TouchableOpacity>
+
+        {BLOOD_GROUPS.map(bg => {
+          const isSel = selectedBlood === bg;
+          return (
+            <TouchableOpacity
+              key={bg}
+              style={[
+                styles.bloodFilterChip,
+                isSel && styles.bloodFilterChipActive,
+              ]}
+              activeOpacity={0.7}
+              onPress={() => setSelectedBlood(isSel ? 'all' : bg)}>
+              <Text
+                style={[
+                  styles.bloodFilterText,
+                  isSel && styles.bloodFilterTextActive,
+                ]}>
+                {bg}
               </Text>
             </TouchableOpacity>
           );
         })}
-      </View>
+      </ScrollView>
     </View>
   );
 
@@ -174,24 +245,21 @@ export default function FeedScreen() {
         activeOpacity={0.92}
         onPress={() => setSelectedTrackingRequest(item)}
         style={[
-          styles.card,
-          isCodeRed && styles.codeRedCard,
+          styles.feedCard,
+          isCodeRed && styles.feedCardCodeRed,
         ]}>
-        {/* Urgency Accent Bar */}
-        <View style={[styles.accentStrip, { backgroundColor: uc.dot }]} />
+        {/* Urgency Highlight Left Border */}
+        <View style={[styles.cardUrgencyStrip, { backgroundColor: uc.dot }]} />
 
-        {/* Card Body */}
-        <View style={styles.cardInner}>
-          {/* Top Row: Blood Type + Urgency Meta */}
-          <View style={styles.topRow}>
-            <View style={styles.bloodTypeWrap}>
-              <View style={[styles.bloodBadge, { backgroundColor: uc.bg, borderColor: uc.border }]}>
-                <MaterialCommunityIcons name="water" size={13} color={uc.text} />
-                <Text style={[styles.bloodBadgeText, { color: uc.text }]}>
-                  {item.bloodType}
-                </Text>
+        <View style={styles.cardContent}>
+          {/* Card Top: Blood group badge + Urgency pill + Units */}
+          <View style={styles.cardTopRow}>
+            <View style={styles.bloodGroupCluster}>
+              <View style={[styles.bloodBadgeBox, { backgroundColor: uc.bg, borderColor: uc.border }]}>
+                <Text style={[styles.bloodBadgeType, { color: uc.text }]}>{item.bloodType}</Text>
               </View>
-              <View style={[styles.urgencyTag, { backgroundColor: uc.bg }]}>
+
+              <View style={[styles.urgencyBadge, { backgroundColor: uc.bg }]}>
                 <View style={[styles.urgencyDot, { backgroundColor: uc.dot }]} />
                 <Text style={[styles.urgencyLabel, { color: uc.text }]}>
                   {item.urgency === 'Code Red' ? 'কোড রেড' : item.urgency}
@@ -199,43 +267,43 @@ export default function FeedScreen() {
               </View>
             </View>
 
-            <View style={styles.topRightMeta}>
-              <Text style={styles.unitsText}>
+            <View style={styles.metaTopRight}>
+              <Text style={styles.unitsHighlight}>
                 {item.requiredUnits} ব্যাগ প্রয়োজন
               </Text>
-              <Text style={styles.timeAgoText}>{item.timeAgo}</Text>
+              <Text style={styles.timeAgoLabel}>{item.timeAgo}</Text>
             </View>
           </View>
 
-          {/* Patient Info */}
-          <View style={styles.patientSection}>
+          {/* Patient Details & JU Identity */}
+          <View style={styles.patientRow}>
             <Text style={styles.patientName} numberOfLines={1}>
               {item.patientName}
             </Text>
-            <View style={styles.requesterMetaRow}>
+            <View style={styles.roleDeptRow}>
               <JuBadge role={item.requesterRole} size="sm" />
-              <Text style={styles.deptText} numberOfLines={1}>
+              <Text style={styles.deptLabel} numberOfLines={1}>
                 {item.requesterDepartment}
               </Text>
             </View>
           </View>
 
-          {/* Hospital & Location */}
-          <View style={styles.locationPillRow}>
-            <Ionicons name="location-sharp" size={12} color="#DC2626" />
-            <Text style={styles.hospitalText} numberOfLines={1}>
+          {/* Hospital & Campus Landmark Pill */}
+          <View style={styles.locationStrip}>
+            <Ionicons name="location-sharp" size={13} color="#DC2626" />
+            <Text style={styles.hospitalTitle} numberOfLines={1}>
               {item.hospital}
             </Text>
-            <View style={styles.distBadge}>
-              <Text style={styles.distBadgeText}>{item.distance}</Text>
+            <View style={styles.distanceBadge}>
+              <Text style={styles.distanceText}>{item.distance}</Text>
             </View>
           </View>
 
-          {/* Responders & Action Buttons */}
-          <View style={styles.cardFooter}>
-            <View style={styles.respondersCol}>
+          {/* Bottom Row: Responder Avatar Pile & Tactile Action Buttons */}
+          <View style={styles.cardActionRow}>
+            <View style={styles.responderCol}>
               {item.respondersCount > 0 ? (
-                <View style={styles.avatarRow}>
+                <View style={styles.avatarCluster}>
                   <View style={styles.avatarStack}>
                     {[0, 1, 2].slice(0, Math.min(item.respondersCount, 3)).map(i => (
                       <View
@@ -243,32 +311,32 @@ export default function FeedScreen() {
                         style={[
                           styles.miniAvatar,
                           {
-                            marginLeft: i > 0 ? -6 : 0,
+                            marginLeft: i > 0 ? -5 : 0,
                             backgroundColor: i === 0 ? '#DC2626' : i === 1 ? '#0284C7' : '#16A34A',
                           },
                         ]}>
-                        <Ionicons name="person" size={8} color="#FFFFFF" />
+                        <Ionicons name="person" size={7} color="#FFFFFF" />
                       </View>
                     ))}
                   </View>
-                  <Text style={styles.respondersLabel}>
+                  <Text style={styles.respondersText}>
                     {item.respondersCount} জন সাড়া দিয়েছেন
                   </Text>
                 </View>
               ) : (
-                <View style={styles.waitingRow}>
-                  <View style={styles.waitingDot} />
-                  <Text style={styles.noRespondersText}>ডোনার খোঁজা হচ্ছে...</Text>
+                <View style={styles.seekingRow}>
+                  <View style={styles.seekingDot} />
+                  <Text style={styles.seekingText}>ডোনার খোঁজা হচ্ছে...</Text>
                 </View>
               )}
             </View>
 
-            {/* Compact Actions Row */}
-            <View style={styles.actionGroup}>
+            <View style={styles.actionButtonGroup}>
+              {/* En-Route Action Pill Button */}
               <TouchableOpacity
                 style={[
-                  styles.respondBtn,
-                  isEnRoute && styles.respondBtnActive,
+                  styles.respondPillBtn,
+                  isEnRoute && styles.respondPillBtnActive,
                 ]}
                 activeOpacity={0.85}
                 onPress={() => handleQuickRespond(item)}>
@@ -277,20 +345,22 @@ export default function FeedScreen() {
                   size={12}
                   color={isEnRoute ? '#16A34A' : '#FFFFFF'}
                 />
-                <Text style={[styles.respondBtnText, isEnRoute && styles.respondBtnTextActive]}>
+                <Text style={[styles.respondPillText, isEnRoute && styles.respondPillTextActive]}>
                   {isEnRoute ? 'রওনা হয়েছি' : 'এগিয়ে আসুন'}
                 </Text>
               </TouchableOpacity>
 
+              {/* Call Button */}
               <TouchableOpacity
-                style={styles.iconActionBtn}
+                style={styles.iconCircleAction}
                 activeOpacity={0.8}
                 onPress={() => handleCall(item.contactNumber)}>
                 <Ionicons name="call" size={13} color="#475569" />
               </TouchableOpacity>
 
+              {/* Share Button */}
               <TouchableOpacity
-                style={styles.iconActionBtn}
+                style={styles.iconCircleAction}
                 activeOpacity={0.8}
                 onPress={() => handleShare(item)}>
                 <Ionicons name="share-social-outline" size={13} color="#475569" />
@@ -304,6 +374,7 @@ export default function FeedScreen() {
 
   return (
     <View style={styles.screen}>
+      {/* Feed header with right side actions restored */}
       <CampusHeader />
 
       <FlatList
@@ -317,8 +388,8 @@ export default function FeedScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#DC2626" />
         }
         ListEmptyComponent={
-          <View style={styles.emptyWrap}>
-            <View style={styles.emptyCircle}>
+          <View style={styles.emptyContainer}>
+            <View style={styles.emptyIconCircle}>
               <MaterialCommunityIcons name="heart-pulse" size={32} color="#CBD5E1" />
             </View>
             <Text style={styles.emptyTitle}>কোনো রক্তের অনুরোধ নেই</Text>
@@ -332,7 +403,7 @@ export default function FeedScreen() {
         style={[styles.fab, { bottom: bottomPadding + 10 }]}
         activeOpacity={0.9}
         onPress={() => router.push('/request')}>
-        <Ionicons name="add" size={20} color="#FFFFFF" />
+        <Ionicons name="add" size={19} color="#FFFFFF" />
         <Text style={styles.fabText}>অনুরোধ</Text>
       </TouchableOpacity>
 
@@ -410,18 +481,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#DC2626',
   },
-  pulseSub: {
-    fontSize: 11,
-    fontWeight: '500',
-    color: '#64748B',
-    lineHeight: 15,
-  },
   pulseStatsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
     backgroundColor: '#F8FAFC',
-    paddingVertical: 8,
+    paddingVertical: 7,
     borderRadius: 8,
   },
   pulseStatItem: {
@@ -443,18 +508,19 @@ const styles = StyleSheet.create({
     height: 18,
     backgroundColor: '#E2E8F0',
   },
-  filterBar: {
+  filterScrollTrack: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: 6,
-    overflow: 'hidden',
+    paddingVertical: 2,
   },
   filterPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 10,
-    height: 28,
-    borderRadius: 7,
+    gap: 5,
+    paddingHorizontal: 12,
+    height: 30,
+    borderRadius: 15,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E2E8F0',
@@ -463,15 +529,72 @@ const styles = StyleSheet.create({
     backgroundColor: '#0F172A',
     borderColor: '#0F172A',
   },
+  filterPillRedActive: {
+    backgroundColor: '#DC2626',
+    borderColor: '#DC2626',
+  },
   filterText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#64748B',
+    color: '#475569',
   },
   filterTextActive: {
     color: '#FFFFFF',
   },
-  card: {
+  countBadge: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 5,
+    height: 16,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  countBadgeActive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+  },
+  countBadgeRedActive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  countText: {
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#475569',
+  },
+  countTextActive: {
+    color: '#FFFFFF',
+  },
+  countTextRedActive: {
+    color: '#FFFFFF',
+  },
+  bloodFilterScrollTrack: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingVertical: 2,
+  },
+  bloodFilterChip: {
+    paddingHorizontal: 9,
+    height: 25,
+    borderRadius: 6,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 0.8,
+    borderColor: '#E2E8F0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  bloodFilterChipActive: {
+    backgroundColor: '#DC2626',
+    borderColor: '#DC2626',
+  },
+  bloodFilterText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#64748B',
+  },
+  bloodFilterTextActive: {
+    color: '#FFFFFF',
+  },
+  feedCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
     borderWidth: 1,
@@ -484,42 +607,38 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 2,
   },
-  codeRedCard: {
+  feedCardCodeRed: {
     borderColor: '#FECACA',
-    backgroundColor: '#FFFFFF',
   },
-  accentStrip: {
+  cardUrgencyStrip: {
     width: 4,
   },
-  cardInner: {
+  cardContent: {
     flex: 1,
-    padding: 11,
-    gap: 7,
+    padding: 12,
+    gap: 8,
   },
-  topRow: {
+  cardTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  bloodTypeWrap: {
+  bloodGroupCluster: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
-  bloodBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    paddingHorizontal: 7,
+  bloodBadgeBox: {
+    paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 6,
     borderWidth: 0.8,
   },
-  bloodBadgeText: {
-    fontSize: 12,
+  bloodBadgeType: {
+    fontSize: 13,
     fontWeight: '900',
   },
-  urgencyTag: {
+  urgencyBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
@@ -536,21 +655,21 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: '800',
   },
-  topRightMeta: {
+  metaTopRight: {
     alignItems: 'flex-end',
     gap: 1,
   },
-  unitsText: {
+  unitsHighlight: {
     fontSize: 11,
     fontWeight: '800',
     color: '#DC2626',
   },
-  timeAgoText: {
+  timeAgoLabel: {
     fontSize: 9,
     fontWeight: '500',
     color: '#94A3B8',
   },
-  patientSection: {
+  patientRow: {
     gap: 2,
   },
   patientName: {
@@ -559,18 +678,18 @@ const styles = StyleSheet.create({
     color: '#0F172A',
     letterSpacing: -0.2,
   },
-  requesterMetaRow: {
+  roleDeptRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
-  deptText: {
+  deptLabel: {
     fontSize: 11,
     fontWeight: '500',
     color: '#64748B',
     flex: 1,
   },
-  locationPillRow: {
+  locationStrip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
@@ -579,38 +698,38 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 7,
   },
-  hospitalText: {
+  hospitalTitle: {
     fontSize: 11,
     fontWeight: '600',
     color: '#334155',
     flex: 1,
   },
-  distBadge: {
+  distanceBadge: {
     backgroundColor: '#E2E8F0',
     paddingHorizontal: 5,
     paddingVertical: 1,
     borderRadius: 4,
   },
-  distBadgeText: {
+  distanceText: {
     fontSize: 9,
     fontWeight: '700',
     color: '#475569',
   },
-  cardFooter: {
+  cardActionRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 3,
+    paddingTop: 4,
     borderTopWidth: 0.5,
     borderTopColor: '#F1F5F9',
   },
-  respondersCol: {
+  responderCol: {
     flex: 1,
   },
-  avatarRow: {
+  avatarCluster: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 5,
   },
   avatarStack: {
     flexDirection: 'row',
@@ -625,33 +744,33 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  respondersLabel: {
+  respondersText: {
     fontSize: 10,
     fontWeight: '600',
     color: '#15803D',
   },
-  waitingRow: {
+  seekingRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
   },
-  waitingDot: {
+  seekingDot: {
     width: 5,
     height: 5,
     borderRadius: 2.5,
     backgroundColor: '#94A3B8',
   },
-  noRespondersText: {
+  seekingText: {
     fontSize: 10,
     fontWeight: '500',
     color: '#94A3B8',
   },
-  actionGroup: {
+  actionButtonGroup: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
   },
-  respondBtn: {
+  respondPillBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
@@ -660,20 +779,20 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: 6,
   },
-  respondBtnActive: {
+  respondPillBtnActive: {
     backgroundColor: '#DCFCE7',
     borderWidth: 0.8,
     borderColor: '#86EFAC',
   },
-  respondBtnText: {
+  respondPillText: {
     fontSize: 10,
     fontWeight: '800',
     color: '#FFFFFF',
   },
-  respondBtnTextActive: {
+  respondPillTextActive: {
     color: '#15803D',
   },
-  iconActionBtn: {
+  iconCircleAction: {
     width: 28,
     height: 28,
     borderRadius: 6,
@@ -689,8 +808,8 @@ const styles = StyleSheet.create({
     gap: 4,
     backgroundColor: '#DC2626',
     paddingHorizontal: 14,
-    height: 40,
-    borderRadius: 20,
+    height: 38,
+    borderRadius: 19,
     shadowColor: '#DC2626',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35,
@@ -702,15 +821,15 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#FFFFFF',
   },
-  emptyWrap: {
+  emptyContainer: {
     alignItems: 'center',
     paddingVertical: 40,
     gap: 8,
   },
-  emptyCircle: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
+  emptyIconCircle: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     backgroundColor: '#F1F5F9',
     justifyContent: 'center',
     alignItems: 'center',

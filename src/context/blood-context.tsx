@@ -28,9 +28,14 @@ interface BloodContextType {
   ) => Promise<void>;
   updateResponseStatus: (requestId: string, status: ResponderStatus) => Promise<void>;
   toggleBookDrive: (driveId: string) => Promise<void>;
+  isLoggedIn: boolean;
+  loginUser: (email?: string, name?: string) => Promise<void>;
+  logoutUser: () => Promise<void>;
   updateProfile: (updates: Partial<DonorProfile>) => Promise<void>;
   refreshAll: () => Promise<void>;
 }
+
+const AUTH_STORAGE_KEY = '@setu_is_logged_in_v1';
 
 const BloodContext = createContext<BloodContextType | undefined>(undefined);
 
@@ -73,19 +78,38 @@ export function BloodProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const loginUser = async (email?: string, name?: string) => {
+    setIsLoggedIn(true);
+    await AsyncStorage.setItem(AUTH_STORAGE_KEY, 'true').catch(() => {});
+    if (name) {
+      setProfile((prev) => ({ ...prev, name }));
+    }
+  };
+
+  const logoutUser = async () => {
+    setIsLoggedIn(false);
+    await AsyncStorage.setItem(AUTH_STORAGE_KEY, 'false').catch(() => {});
+  };
+
   const refreshAll = async () => {
     try {
-      const [reqData, donorData, driveData, profData, hasSeenOnboarding] = await Promise.all([
+      const [reqData, donorData, driveData, profData, hasSeenOnboarding, authStatus] = await Promise.all([
         bloodService.getRequests(),
         bloodService.getDonors(),
         bloodService.getDrives(),
         bloodService.getProfile(),
         AsyncStorage.getItem(ONBOARDING_STORAGE_KEY).catch(() => 'true'),
+        AsyncStorage.getItem(AUTH_STORAGE_KEY).catch(() => null),
       ]);
       setRequests(reqData);
       setDonors(donorData);
       setDrives(driveData);
       setProfile(profData);
+
+      // Check auth status: default to false if explicitly false or unset
+      setIsLoggedIn(authStatus === 'true');
 
       // Only auto-show for first-time installation
       if (!hasSeenOnboarding) {
@@ -144,6 +168,9 @@ export function BloodProvider({ children }: { children: React.ReactNode }) {
         createRequest,
         updateResponseStatus,
         toggleBookDrive,
+        isLoggedIn,
+        loginUser,
+        logoutUser,
         updateProfile,
         refreshAll,
       }}>

@@ -104,3 +104,14 @@ export interface DonorProfile {
   lastDonationDate: string;
   records: DonationRecord[];
 }
+
+export interface SetuNotification {
+  id: string;
+  title: string;
+  message: string;
+  type: 'code_red' | 'donor_response' | 'milestone' | 'drive' | 'system';
+  timeAgo: string;
+  isRead: boolean;
+  requestId?: string;
+  actionUrl?: string;
+}

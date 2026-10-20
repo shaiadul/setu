@@ -21,6 +21,8 @@ import { JuBadge } from "@/components/ju-badge";
 import { RequestTrackingModal } from "@/components/request-tracking-modal";
 import { useBlood } from "@/context/blood-context";
 import { BloodGroup, BloodRequest, JuRole } from "@/types/blood";
+import { LinearGradient } from "expo-linear-gradient";
+import { BrandGradient } from "@/constants/theme";
 
 const BLOOD_GROUPS: BloodGroup[] = [
   "O-",
@@ -115,10 +117,10 @@ export default function FeedScreen() {
   const urgencyColor = (u: string) => {
     if (u === "Code Red") {
       return {
-        bg: "#FEF2F2",
-        text: "#DC2626",
-        dot: "#DC2626",
-        border: "#FECACA",
+        bg: "#FFF1F2",
+        text: "#BE123C",
+        dot: "#BE123C",
+        border: "#FECDD3",
       };
     }
     if (u === "Urgent") {
@@ -160,7 +162,7 @@ export default function FeedScreen() {
             activeOpacity={0.8}
             onPress={() => router.push("/drives")}
           >
-            <Ionicons name="calendar-outline" size={13} color="#DC2626" />
+            <Ionicons name="calendar-outline" size={13} color="#BE123C" />
           </TouchableOpacity>
         </View>
 
@@ -224,7 +226,7 @@ export default function FeedScreen() {
             <MaterialCommunityIcons
               name="water-alert-outline"
               size={15}
-              color="#DC2626"
+              color="#BE123C"
             />
             <Text style={styles.stockNoticeText}>
               জরুরি রক্তের প্রয়োজন:{" "}
@@ -240,7 +242,7 @@ export default function FeedScreen() {
         {/* Section Header */}
         <View style={styles.bloodSectionHeader}>
           <View style={styles.bloodHeaderTitleRow}>
-            <MaterialCommunityIcons name="water" size={15} color="#DC2626" />
+            <MaterialCommunityIcons name="water" size={15} color="#BE123C" />
             <Text style={styles.bloodSectionTitle}>রক্তের গ্রুপ নির্বাচন</Text>
             {selectedBlood !== "all" && (
               <View style={styles.selectedPillBadge}>
@@ -255,7 +257,7 @@ export default function FeedScreen() {
               activeOpacity={0.7}
               style={styles.clearFilterBtn}
             >
-              <Ionicons name="close-circle-outline" size={12} color="#DC2626" />
+              <Ionicons name="close-circle-outline" size={12} color="#BE123C" />
               <Text style={styles.clearFilterText}>সব দেখুন</Text>
             </TouchableOpacity>
           ) : (
@@ -273,43 +275,49 @@ export default function FeedScreen() {
           <TouchableOpacity
             style={[
               styles.bloodCard,
-              selectedBlood === "all" && styles.bloodCardActive,
+              selectedBlood === "all" && styles.bloodCardActiveWrapper,
             ]}
             activeOpacity={0.8}
             onPress={() => setSelectedBlood("all")}
           >
-            <View style={styles.bloodCardIconWrap}>
-              <MaterialCommunityIcons
-                name="water-outline"
-                size={13}
-                color={selectedBlood === "all" ? "#FFFFFF" : "#64748B"}
-              />
-            </View>
-            <Text
-              style={[
-                styles.bloodCardLabel,
-                selectedBlood === "all" && styles.bloodCardLabelActive,
-              ]}
-            >
-              সব
-            </Text>
-            <View
-              style={[
-                styles.cardBadge,
-                selectedBlood === "all"
-                  ? styles.cardBadgeActive
-                  : styles.cardBadgeNeutral,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.cardBadgeText,
-                  selectedBlood === "all" && styles.cardBadgeTextActive,
-                ]}
+            {selectedBlood === "all" ? (
+              <LinearGradient
+                colors={BrandGradient.colors}
+                start={BrandGradient.start}
+                end={BrandGradient.end}
+                style={styles.bloodCardGradient}
               >
-                {requests.length}
-              </Text>
-            </View>
+                <View style={styles.bloodCardIconWrap}>
+                  <MaterialCommunityIcons
+                    name="water-outline"
+                    size={13}
+                    color="#FFFFFF"
+                  />
+                </View>
+                <Text style={[styles.bloodCardLabel, styles.bloodCardLabelActive]}>
+                  সব
+                </Text>
+                <View style={[styles.cardBadge, styles.cardBadgeActive]}>
+                  <Text style={[styles.cardBadgeText, styles.cardBadgeTextActive]}>
+                    {requests.length}
+                  </Text>
+                </View>
+              </LinearGradient>
+            ) : (
+              <>
+                <View style={styles.bloodCardIconWrap}>
+                  <MaterialCommunityIcons
+                    name="water-outline"
+                    size={13}
+                    color="#64748B"
+                  />
+                </View>
+                <Text style={styles.bloodCardLabel}>সব</Text>
+                <View style={[styles.cardBadge, styles.cardBadgeNeutral]}>
+                  <Text style={styles.cardBadgeText}>{requests.length}</Text>
+                </View>
+              </>
+            )}
           </TouchableOpacity>
 
           {/* Individual Blood Group Cards */}
@@ -324,67 +332,64 @@ export default function FeedScreen() {
                 key={bg}
                 style={[
                   styles.bloodCard,
-                  isSel && styles.bloodCardActive,
+                  isSel && styles.bloodCardActiveWrapper,
                   !isSel && hasRequests && styles.bloodCardHasRequests,
                 ]}
                 activeOpacity={0.8}
                 onPress={() => setSelectedBlood(isSel ? "all" : bg)}
               >
-                {isRare && (
-                  <View
-                    style={[
-                      styles.rareDot,
-                      isSel && styles.rareDotActive,
-                    ]}
-                  />
-                )}
-
-                <View style={styles.bloodCardIconWrap}>
-                  <MaterialCommunityIcons
-                    name="water"
-                    size={12}
-                    color={
-                      isSel
-                        ? "#FFFFFF"
-                        : hasRequests
-                          ? "#DC2626"
-                          : "#94A3B8"
-                    }
-                  />
-                </View>
-
-                <Text
-                  style={[
-                    styles.bloodCardLabel,
-                    isSel && styles.bloodCardLabelActive,
-                  ]}
-                >
-                  {bg}
-                </Text>
-
-                <View
-                  style={[
-                    styles.cardBadge,
-                    isSel
-                      ? styles.cardBadgeActive
-                      : hasRequests
-                        ? styles.cardBadgeUrgent
-                        : styles.cardBadgeMuted,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.cardBadgeText,
-                      isSel
-                        ? styles.cardBadgeTextActive
-                        : hasRequests
-                          ? styles.cardBadgeTextUrgent
-                          : styles.cardBadgeTextMuted,
-                    ]}
+                {isSel ? (
+                  <LinearGradient
+                    colors={BrandGradient.colors}
+                    start={BrandGradient.start}
+                    end={BrandGradient.end}
+                    style={styles.bloodCardGradient}
                   >
-                    {count > 0 ? `${count}টি` : "০"}
-                  </Text>
-                </View>
+                    {isRare && <View style={[styles.rareDot, styles.rareDotActive]} />}
+                    <View style={styles.bloodCardIconWrap}>
+                      <MaterialCommunityIcons
+                        name="water"
+                        size={12}
+                        color="#FFFFFF"
+                      />
+                    </View>
+                    <Text style={[styles.bloodCardLabel, styles.bloodCardLabelActive]}>
+                      {bg}
+                    </Text>
+                    <View style={[styles.cardBadge, styles.cardBadgeActive]}>
+                      <Text style={[styles.cardBadgeText, styles.cardBadgeTextActive]}>
+                        {count > 0 ? `${count}টি` : "০"}
+                      </Text>
+                    </View>
+                  </LinearGradient>
+                ) : (
+                  <>
+                    {isRare && <View style={styles.rareDot} />}
+                    <View style={styles.bloodCardIconWrap}>
+                      <MaterialCommunityIcons
+                        name="water"
+                        size={12}
+                        color={hasRequests ? "#BE123C" : "#94A3B8"}
+                      />
+                    </View>
+                    <Text style={styles.bloodCardLabel}>{bg}</Text>
+                    <View
+                      style={[
+                        styles.cardBadge,
+                        hasRequests ? styles.cardBadgeUrgent : styles.cardBadgeMuted,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.cardBadgeText,
+                          hasRequests && styles.cardBadgeTextUrgent,
+                        ]}
+                      >
+                        {count > 0 ? `${count}টি` : "০"}
+                      </Text>
+                    </View>
+                  </>
+                )}
               </TouchableOpacity>
             );
           })}
@@ -455,7 +460,7 @@ export default function FeedScreen() {
 
           {/* Hospital & Campus Landmark Pill */}
           <View style={styles.locationStrip}>
-            <Ionicons name="location-sharp" size={13} color="#DC2626" />
+            <Ionicons name="location-sharp" size={13} color="#BE123C" />
             <Text style={styles.hospitalTitle} numberOfLines={1}>
               {item.hospital}
             </Text>
@@ -481,7 +486,7 @@ export default function FeedScreen() {
                               marginLeft: i > 0 ? -5 : 0,
                               backgroundColor:
                                 i === 0
-                                  ? "#DC2626"
+                                  ? "#BE123C"
                                   : i === 1
                                     ? "#0284C7"
                                     : "#16A34A",
@@ -562,6 +567,7 @@ export default function FeedScreen() {
       <CampusHeader
         title="সেতু • রক্তের বন্ধন"
         subtitle="জাহাঙ্গীরনগর বিশ্ববিদ্যালয় ডোনার নেটওয়ার্ক"
+        showQuickStats
       />
 
       <FlatList
@@ -578,7 +584,7 @@ export default function FeedScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#DC2626"
+            tintColor="#BE123C"
           />
         }
         ListEmptyComponent={
@@ -602,26 +608,40 @@ export default function FeedScreen() {
             </Text>
             {selectedBlood !== "all" && (
               <TouchableOpacity
-                style={styles.emptyResetBtn}
+                style={styles.emptyResetBtnTouch}
                 onPress={() => setSelectedBlood("all")}
-                activeOpacity={0.8}
+                activeOpacity={0.88}
               >
-                <Ionicons name="refresh" size={13} color="#FFFFFF" />
-                <Text style={styles.emptyResetBtnText}>সকল রক্তের অনুরোধ দেখুন</Text>
+                <LinearGradient
+                  colors={BrandGradient.colors}
+                  start={BrandGradient.start}
+                  end={BrandGradient.end}
+                  style={styles.emptyResetBtn}
+                >
+                  <Ionicons name="refresh" size={13} color="#FFFFFF" />
+                  <Text style={styles.emptyResetBtnText}>সকল রক্তের অনুরোধ দেখুন</Text>
+                </LinearGradient>
               </TouchableOpacity>
             )}
           </View>
         }
       />
 
-      {/* Floating Request Button */}
+      {/* Floating Request Button with Brand Gradient */}
       <TouchableOpacity
-        style={[styles.fab, { bottom: bottomPadding + 10 }]}
-        activeOpacity={0.9}
+        style={[styles.fabTouch, { bottom: bottomPadding + 10 }]}
+        activeOpacity={0.88}
         onPress={() => router.push("/request")}
       >
-        <Ionicons name="add" size={19} color="#FFFFFF" />
-        <Text style={styles.fabText}>অনুরোধ</Text>
+        <LinearGradient
+          colors={BrandGradient.colors}
+          start={BrandGradient.start}
+          end={BrandGradient.end}
+          style={styles.fabGradient}
+        >
+          <Ionicons name="add" size={19} color="#FFFFFF" />
+          <Text style={styles.fabText}>অনুরোধ</Text>
+        </LinearGradient>
       </TouchableOpacity>
 
       {/* Live Request Tracking Modal */}
@@ -702,14 +722,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     height: 26,
     borderRadius: 6,
-    backgroundColor: "#FEF2F2",
+    backgroundColor: "#FFF1F2",
     borderWidth: 0.8,
-    borderColor: "#FECACA",
+    borderColor: "#FECDD3",
   },
   heroActionText: {
     fontSize: 10,
     fontWeight: "800",
-    color: "#DC2626",
+    color: "#BE123C",
   },
   graphContainer: {
     backgroundColor: "#F8FAFC",
@@ -728,7 +748,7 @@ const styles = StyleSheet.create({
     color: "#475569",
   },
   graphHighlight: {
-    color: "#DC2626",
+    color: "#BE123C",
     fontWeight: "800",
   },
   peakIndicator: {
@@ -764,7 +784,7 @@ const styles = StyleSheet.create({
     color: "#94A3B8",
   },
   barBagsLabelActive: {
-    color: "#DC2626",
+    color: "#BE123C",
     fontWeight: "900",
   },
   barTrack: {
@@ -786,7 +806,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#0284C7",
   },
   barFillToday: {
-    backgroundColor: "#DC2626",
+    backgroundColor: "#BE123C",
   },
   barDayText: {
     fontSize: 9,
@@ -794,14 +814,14 @@ const styles = StyleSheet.create({
     color: "#64748B",
   },
   barDayTextActive: {
-    color: "#DC2626",
+    color: "#BE123C",
     fontWeight: "800",
   },
   stockNoticeRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#FEF2F2",
+    backgroundColor: "#FFF1F2",
     paddingHorizontal: 8,
     paddingVertical: 6,
     borderRadius: 7,
@@ -817,13 +837,13 @@ const styles = StyleSheet.create({
     color: "#475569",
   },
   stockHighlight: {
-    color: "#DC2626",
+    color: "#BE123C",
     fontWeight: "800",
   },
   stockSpeedText: {
     fontSize: 9,
     fontWeight: "700",
-    color: "#DC2626",
+    color: "#BE123C",
   },
   bloodSectionContainer: {
     backgroundColor: "#FFFFFF",
@@ -855,7 +875,7 @@ const styles = StyleSheet.create({
     color: "#1E293B",
   },
   selectedPillBadge: {
-    backgroundColor: "#DC2626",
+    backgroundColor: "#BE123C",
     paddingHorizontal: 6,
     paddingVertical: 1,
     borderRadius: 4,
@@ -869,17 +889,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 3,
-    backgroundColor: "#FEF2F2",
+    backgroundColor: "#FFF1F2",
     paddingHorizontal: 8,
     paddingVertical: 2.5,
     borderRadius: 6,
     borderWidth: 0.8,
-    borderColor: "#FECACA",
+    borderColor: "#FECDD3",
   },
   clearFilterText: {
     fontSize: 10,
     fontWeight: "700",
-    color: "#DC2626",
+    color: "#BE123C",
   },
   allCountText: {
     fontSize: 10,
@@ -905,17 +925,34 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     position: "relative",
   },
+  bloodCardActiveWrapper: {
+    borderWidth: 0,
+    backgroundColor: "transparent",
+    shadowColor: "#881337",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  bloodCardGradient: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 6,
+  },
   bloodCardActive: {
-    backgroundColor: "#DC2626",
-    borderColor: "#DC2626",
-    shadowColor: "#DC2626",
+    backgroundColor: "#BE123C",
+    borderColor: "#BE123C",
+    shadowColor: "#881337",
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.35,
     shadowRadius: 6,
     elevation: 4,
   },
   bloodCardHasRequests: {
-    borderColor: "#FECACA",
+    borderColor: "#FECDD3",
     backgroundColor: "#FFFFFF",
   },
   bloodCardIconWrap: {
@@ -938,7 +975,7 @@ const styles = StyleSheet.create({
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "#DC2626",
+    backgroundColor: "#BE123C",
   },
   rareDotActive: {
     backgroundColor: "#FFFFFF",
@@ -970,7 +1007,7 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
   cardBadgeTextUrgent: {
-    color: "#DC2626",
+    color: "#BE123C",
   },
   cardBadgeTextMuted: {
     color: "#94A3B8",
@@ -1043,7 +1080,7 @@ const styles = StyleSheet.create({
   unitsHighlight: {
     fontSize: 11,
     fontWeight: "800",
-    color: "#DC2626",
+    color: "#BE123C",
   },
   timeAgoLabel: {
     fontSize: 9,
@@ -1155,7 +1192,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: "#DC2626",
+    backgroundColor: "#BE123C",
     paddingHorizontal: 9,
     height: 28,
     borderRadius: 6,
@@ -1181,17 +1218,36 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  fabTouch: {
+    position: "absolute",
+    right: 16,
+    borderRadius: 20,
+    shadowColor: "#881337",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 6,
+    overflow: "hidden",
+  },
+  fabGradient: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingHorizontal: 16,
+    height: 40,
+    borderRadius: 20,
+  },
   fab: {
     position: "absolute",
     right: 16,
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: "#DC2626",
+    backgroundColor: "#BE123C",
     paddingHorizontal: 14,
     height: 38,
     borderRadius: 19,
-    shadowColor: "#DC2626",
+    shadowColor: "#881337",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35,
     shadowRadius: 8,
@@ -1229,15 +1285,23 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 16,
   },
+  emptyResetBtnTouch: {
+    borderRadius: 17,
+    overflow: "hidden",
+    marginTop: 6,
+    shadowColor: "#881337",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    elevation: 2,
+  },
   emptyResetBtn: {
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    backgroundColor: "#DC2626",
     paddingHorizontal: 14,
     height: 34,
     borderRadius: 17,
-    marginTop: 6,
   },
   emptyResetBtnText: {
     fontSize: 11,

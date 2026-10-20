@@ -15,8 +15,11 @@ import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CampusHeader } from '@/components/campus-header';
+import { PrimaryButton } from '@/components/primary-button';
 import { useBlood } from '@/context/blood-context';
 import { BloodGroup, CaseType, JuRole, UrgencyLevel } from '@/types/blood';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BrandGradient } from '@/constants/theme';
 
 const BLOOD_GROUPS: BloodGroup[] = ['O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+'];
 
@@ -111,16 +114,20 @@ export default function RequestScreen() {
         contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled">
-        {/* Urgent Announcement Alert Strip */}
-        <View style={styles.alertBanner}>
-          <Ionicons name="megaphone" size={16} color="#DC2626" />
+        {/* Urgent Announcement Alert Strip with Brand Gradient */}
+        <LinearGradient
+          colors={['#FFF1F2', '#FFE4E6']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.alertBanner}>
+          <Ionicons name="megaphone" size={16} color="#BE123C" />
           <View style={styles.alertTextWrap}>
             <Text style={styles.alertTitle}>ক্যাম্পাস ইমার্জেন্সি এসওএস ব্রডকাস্ট</Text>
             <Text style={styles.alertDesc}>
               অনুরোধ পোস্ট করার সাথে সাথে জাবি শিক্ষার্থী, শিক্ষক ও কর্মকর্তা রক্তদাতাদের কাছে পুশ এলার্ট পৌঁছে যাবে।
             </Text>
           </View>
-        </View>
+        </LinearGradient>
 
         {/* Step 1: Patient Details & Identity */}
         <View style={styles.card}>
@@ -251,7 +258,7 @@ export default function RequestScreen() {
           <View style={styles.urgencyChoiceRow}>
             {(
               [
-                { id: 'Code Red', label: '🚨 কোড রেড', sub: 'তাৎক্ষণিক', color: '#DC2626' },
+                { id: 'Code Red', label: '🚨 কোড রেড', sub: 'তাৎক্ষণিক', color: '#BE123C' },
                 { id: 'Urgent', label: '⚡ জরুরি', sub: '২৪ ঘণ্টা', color: '#D97706' },
                 { id: 'Standard', label: '🗓️ সাধারণ', sub: 'শিডিউল', color: '#0284C7' },
               ] as const
@@ -322,7 +329,7 @@ export default function RequestScreen() {
                   <Ionicons
                     name={isSel ? 'radio-button-on' : 'radio-button-off'}
                     size={15}
-                    color={isSel ? '#DC2626' : '#94A3B8'}
+                    color={isSel ? '#BE123C' : '#94A3B8'}
                   />
                   <View style={styles.hospitalTextWrap}>
                     <Text style={styles.hospitalNameText}>{h.name}</Text>
@@ -371,16 +378,12 @@ export default function RequestScreen() {
         </View>
 
         {/* Refined Submit Action */}
-        <TouchableOpacity
-          style={styles.submitBtn}
-          activeOpacity={0.88}
-          disabled={isSubmitting}
-          onPress={handleSubmit}>
-          <Ionicons name="paper-plane" size={16} color="#FFFFFF" />
-          <Text style={styles.submitBtnText}>
-            {isSubmitting ? 'পোস্ট হচ্ছে...' : 'সেতু নেটওয়ার্কে রক্তের অনুরোধ পোস্ট করুন'}
-          </Text>
-        </TouchableOpacity>
+        <PrimaryButton
+          title={isSubmitting ? 'পোস্ট হচ্ছে...' : 'সেতু নেটওয়ার্কে রক্তের অনুরোধ পোস্ট করুন'}
+          icon="paper-plane"
+          loading={isSubmitting}
+          onPress={handleSubmit}
+        />
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -399,9 +402,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: '#FEF2F2',
+    backgroundColor: '#FFF1F2',
     borderWidth: 0.8,
-    borderColor: '#FECACA',
+    borderColor: '#FECDD3',
     borderRadius: 12,
     padding: 10,
   },
@@ -412,7 +415,7 @@ const styles = StyleSheet.create({
   alertTitle: {
     fontSize: 11,
     fontWeight: '800',
-    color: '#DC2626',
+    color: '#BE123C',
   },
   alertDesc: {
     fontSize: 10,
@@ -442,7 +445,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: '#DC2626',
+    backgroundColor: '#BE123C',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -504,8 +507,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   roleChipActive: {
-    backgroundColor: '#FEF2F2',
-    borderColor: '#DC2626',
+    backgroundColor: '#FFF1F2',
+    borderColor: '#BE123C',
   },
   roleChipText: {
     fontSize: 11,
@@ -513,7 +516,7 @@ const styles = StyleSheet.create({
     color: '#64748B',
   },
   roleChipTextActive: {
-    color: '#DC2626',
+    color: '#BE123C',
   },
   twoColRow: {
     flexDirection: 'row',
@@ -535,8 +538,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   bloodBoxActive: {
-    backgroundColor: '#DC2626',
-    borderColor: '#DC2626',
+    backgroundColor: '#BE123C',
+    borderColor: '#BE123C',
   },
   bloodBoxText: {
     fontSize: 13,
@@ -575,7 +578,7 @@ const styles = StyleSheet.create({
   counterValue: {
     fontSize: 13,
     fontWeight: '800',
-    color: '#DC2626',
+    color: '#BE123C',
     minWidth: 44,
     textAlign: 'center',
   },
@@ -668,8 +671,8 @@ const styles = StyleSheet.create({
     gap: 6,
     height: 42,
     borderRadius: 10,
-    backgroundColor: '#DC2626',
-    shadowColor: '#DC2626',
+    backgroundColor: '#BE123C',
+    shadowColor: '#881337',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
     shadowRadius: 6,

@@ -8,10 +8,12 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { JuDonor } from '@/types/blood';
 import { useTheme } from '@/hooks/use-theme';
 import { JuBadge } from '@/components/ju-badge';
 import { BloodGroupBadge } from '@/components/blood-group-badge';
+import { BrandGradient } from '@/constants/theme';
 
 interface DonorCardProps {
   donor: JuDonor;
@@ -85,10 +87,16 @@ export function DonorCard({ donor }: DonorCardProps) {
         {/* Compact Action Buttons */}
         <View style={styles.actionsRow}>
           <TouchableOpacity
-            style={styles.callBtn}
-            activeOpacity={0.8}
+            style={styles.callBtnTouch}
+            activeOpacity={0.85}
             onPress={handleCall}>
-            <Ionicons name="call" size={13} color="#FFFFFF" />
+            <LinearGradient
+              colors={BrandGradient.colors}
+              start={BrandGradient.start}
+              end={BrandGradient.end}
+              style={styles.callBtn}>
+              <Ionicons name="call" size={13} color="#FFFFFF" />
+            </LinearGradient>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -191,11 +199,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 5,
   },
+  callBtnTouch: {
+    borderRadius: 7,
+    overflow: 'hidden',
+  },
   callBtn: {
     width: 28,
     height: 28,
     borderRadius: 7,
-    backgroundColor: '#DC2626',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -241,7 +252,7 @@ const styles = StyleSheet.create({
     color: '#64748B',
   },
   statBold: {
-    color: '#DC2626',
+    color: '#BE123C',
     fontWeight: '800',
   },
 });

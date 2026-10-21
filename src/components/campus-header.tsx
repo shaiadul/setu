@@ -1,4 +1,5 @@
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -213,10 +214,11 @@ export function CampusHeader({
               {/* Brand Emblem */}
               {!isCompact && (
                 <View style={styles.brandEmblemBox}>
-                  <MaterialCommunityIcons
-                    name="water"
-                    size={20}
-                    color="#FFFFFF"
+                  <Image
+                    source={require("../../assets/images/julogo.webp")}
+                    style={styles.brandLogo}
+                    contentFit="contain"
+                    accessibilityLabel="জাহাঙ্গীরনগর বিশ্ববিদ্যালয়"
                   />
                 </View>
               )}
@@ -528,18 +530,25 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   brandEmblemBox: {
-    width: 36,
-    height: 36,
+    width: 38,
+    height: 38,
     borderRadius: 12,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.35)",
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1.5,
+    borderColor: "rgba(255, 255, 255, 0.9)",
     justifyContent: "center",
     alignItems: "center",
+    padding: 3,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.15,
     shadowRadius: 4,
+    elevation: 3,
+    overflow: "hidden",
+  },
+  brandLogo: {
+    width: "100%",
+    height: "100%",
   },
   titleCol: {
     flex: 1,

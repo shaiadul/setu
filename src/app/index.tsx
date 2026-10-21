@@ -37,6 +37,15 @@ const BLOOD_GROUPS: BloodGroup[] = [
   "AB+",
 ];
 
+const CASE_TYPE_LABELS: Record<string, string> = {
+  "Trauma / Accident": "দুর্ঘটনা / ট্রমা",
+  "Emergency Surgery": "জরুরি সার্জারি",
+  "Thalassemia": "থ্যালাসেমিয়া",
+  "Dengue Platelets": "ডেঙ্গু প্লাটিলেট",
+  "Maternity": "প্রসূতি / সিজার",
+  "ICU Critical": "আইসিইউ ক্রিটিক্যাল",
+};
+
 const WEEKLY_IMPACT_DATA = [
   { day: "শনি", bags: 3, heightPercent: 45, isPeak: false },
   { day: "রবি", bags: 6, heightPercent: 75, isPeak: false },
@@ -405,6 +414,9 @@ export default function FeedScreen() {
     const isCodeRed = item.urgency === "Code Red";
     const isEnRoute = item.userStatus === "en_route";
     const uc = urgencyColor(item.urgency);
+    const caseLabel = item.caseType
+      ? CASE_TYPE_LABELS[item.caseType] || item.caseType
+      : null;
 
     return (
       <TouchableOpacity
@@ -416,59 +428,89 @@ export default function FeedScreen() {
         <View style={[styles.cardUrgencyStrip, { backgroundColor: uc.dot }]} />
 
         <View style={styles.cardContent}>
-          {/* Card Top: Blood group badge + Urgency pill + Units */}
+          {/* Card Top: Blood group hero badge + Identity & Case + Urgency pill */}
           <View style={styles.cardTopRow}>
-            <View style={styles.bloodGroupCluster}>
+            {/* Blood Type Hero Pill */}
+            <View
+              style={[
+                styles.bloodBadgeBox,
+                { backgroundColor: uc.bg, borderColor: uc.border },
+              ]}
+            >
+              <MaterialCommunityIcons name="water" size={13} color={uc.dot} />
+              <Text style={[styles.bloodBadgeType, { color: uc.text }]}>
+                {item.bloodType}
+              </Text>
+            </View>
+
+            {/* Patient & Case Information */}
+            <View style={styles.cardIdentityCol}>
+              <View style={styles.patientTitleRow}>
+                <Text style={styles.patientName} numberOfLines={1}>
+                  {item.patientName}
+                </Text>
+                {caseLabel && (
+                  <View style={styles.caseTypeBadge}>
+                    <Text style={styles.caseTypeText} numberOfLines={1}>
+                      {caseLabel}
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              <View style={styles.roleDeptRow}>
+                <JuBadge role={item.requesterRole} size="sm" />
+                <Text style={styles.deptLabel} numberOfLines={1}>
+                  {item.requesterDepartment}
+                </Text>
+              </View>
+            </View>
+
+            {/* Urgency Badge & Time */}
+            <View style={styles.metaTopRight}>
               <View
                 style={[
-                  styles.bloodBadgeBox,
+                  styles.urgencyBadge,
                   { backgroundColor: uc.bg, borderColor: uc.border },
                 ]}
               >
-                <Text style={[styles.bloodBadgeType, { color: uc.text }]}>
-                  {item.bloodType}
-                </Text>
-              </View>
-
-              <View style={[styles.urgencyBadge, { backgroundColor: uc.bg }]}>
                 <View
                   style={[styles.urgencyDot, { backgroundColor: uc.dot }]}
                 />
                 <Text style={[styles.urgencyLabel, { color: uc.text }]}>
-                  {item.urgency === "Code Red" ? "কোড রেড" : item.urgency}
+                  {item.urgency === "Code Red"
+                    ? "কোড রেড"
+                    : item.urgency === "Urgent"
+                      ? "জরুরি"
+                      : "সাধারণ"}
                 </Text>
               </View>
-            </View>
-
-            <View style={styles.metaTopRight}>
-              <Text style={styles.unitsHighlight}>
-                {item.requiredUnits} ব্যাগ প্রয়োজন
-              </Text>
               <Text style={styles.timeAgoLabel}>{item.timeAgo}</Text>
             </View>
           </View>
 
-          {/* Patient Details & JU Identity */}
-          <View style={styles.patientRow}>
-            <Text style={styles.patientName} numberOfLines={1}>
-              {item.patientName}
-            </Text>
-            <View style={styles.roleDeptRow}>
-              <JuBadge role={item.requesterRole} size="sm" />
-              <Text style={styles.deptLabel} numberOfLines={1}>
-                {item.requesterDepartment}
-              </Text>
-            </View>
-          </View>
-
-          {/* Hospital & Campus Landmark Pill */}
+          {/* Hospital, Room & Required Units Strip */}
           <View style={styles.locationStrip}>
-            <Ionicons name="location-sharp" size={13} color="#BE123C" />
-            <Text style={styles.hospitalTitle} numberOfLines={1}>
-              {item.hospital}
-            </Text>
-            <View style={styles.distanceBadge}>
-              <Text style={styles.distanceText}>{item.distance}</Text>
+            <View style={styles.locationInfoLeft}>
+              <Ionicons name="location-sharp" size={13} color="#BE123C" />
+              <Text style={styles.hospitalTitle} numberOfLines={1}>
+                {item.hospital}
+                {item.room ? ` • ${item.room}` : ""}
+              </Text>
+              <View style={styles.distanceBadge}>
+                <Text style={styles.distanceText}>{item.distance}</Text>
+              </View>
+            </View>
+
+            <View style={styles.unitsPill}>
+              <MaterialCommunityIcons
+                name="blood-bag"
+                size={12}
+                color="#BE123C"
+              />
+              <Text style={styles.unitsHighlight}>
+                {item.requiredUnits} ব্যাগ
+              </Text>
             </View>
           </View>
 
@@ -522,19 +564,28 @@ export default function FeedScreen() {
                 activeOpacity={0.85}
                 onPress={() => handleQuickRespond(item)}
               >
-                <Ionicons
-                  name={isEnRoute ? "checkmark-circle" : "flash"}
-                  size={12}
-                  color={isEnRoute ? "#16A34A" : "#FFFFFF"}
-                />
-                <Text
-                  style={[
-                    styles.respondPillText,
-                    isEnRoute && styles.respondPillTextActive,
-                  ]}
-                >
-                  {isEnRoute ? "রওনা হয়েছি" : "এগিয়ে আসুন"}
-                </Text>
+                {isEnRoute ? (
+                  <>
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={13}
+                      color="#16A34A"
+                    />
+                    <Text
+                      style={[
+                        styles.respondPillText,
+                        styles.respondPillTextActive,
+                      ]}
+                    >
+                      রওনা হয়েছি
+                    </Text>
+                  </>
+                ) : (
+                  <>
+                    <Ionicons name="flash" size={12} color="#FFFFFF" />
+                    <Text style={styles.respondPillText}>এগিয়ে আসুন</Text>
+                  </>
+                )}
               </TouchableOpacity>
 
               {/* Call Button */}
@@ -543,7 +594,7 @@ export default function FeedScreen() {
                 activeOpacity={0.8}
                 onPress={() => handleCall(item.contactNumber)}
               >
-                <Ionicons name="call" size={13} color="#475569" />
+                <Ionicons name="call" size={13} color="#15803D" />
               </TouchableOpacity>
 
               {/* Share Button */}
@@ -1034,18 +1085,19 @@ const styles = StyleSheet.create({
   feedCard: {
     backgroundColor: "#FFFFFF",
     borderRadius: 14,
-    borderWidth: 1,
+    borderWidth: 1.2,
     borderColor: "#E2E8F0",
     flexDirection: "row",
     overflow: "hidden",
     shadowColor: "#0F172A",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
+    shadowOpacity: 0.05,
     shadowRadius: 6,
     elevation: 2,
   },
   feedCardCodeRed: {
-    borderColor: "#FECACA",
+    borderColor: "#FECDD3",
+    backgroundColor: "#FFFDFD",
   },
   cardUrgencyStrip: {
     width: 4,
@@ -1057,63 +1109,52 @@ const styles = StyleSheet.create({
   },
   cardTopRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+    gap: 9,
   },
-  bloodGroupCluster: {
+  bloodBadgeBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    borderWidth: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 1,
+  },
+  bloodBadgeType: {
+    fontSize: 14,
+    fontWeight: "900",
+    letterSpacing: -0.3,
+  },
+  cardIdentityCol: {
+    flex: 1,
+    justifyContent: "center",
+    gap: 3,
+  },
+  patientTitleRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-  },
-  bloodBadgeBox: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
-    borderWidth: 0.8,
-  },
-  bloodBadgeType: {
-    fontSize: 13,
-    fontWeight: "900",
-  },
-  urgencyBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 5,
-  },
-  urgencyDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-  },
-  urgencyLabel: {
-    fontSize: 9,
-    fontWeight: "800",
-  },
-  metaTopRight: {
-    alignItems: "flex-end",
-    gap: 1,
-  },
-  unitsHighlight: {
-    fontSize: 11,
-    fontWeight: "800",
-    color: "#BE123C",
-  },
-  timeAgoLabel: {
-    fontSize: 9,
-    fontWeight: "500",
-    color: "#94A3B8",
-  },
-  patientRow: {
-    gap: 2,
   },
   patientName: {
     fontSize: 14,
     fontWeight: "800",
     color: "#0F172A",
     letterSpacing: -0.2,
+    maxWidth: 140,
+  },
+  caseTypeBadge: {
+    backgroundColor: "#F1F5F9",
+    paddingHorizontal: 5,
+    paddingVertical: 1.5,
+    borderRadius: 4,
+    borderWidth: 0.6,
+    borderColor: "#E2E8F0",
+  },
+  caseTypeText: {
+    fontSize: 9.5,
+    fontWeight: "700",
+    color: "#475569",
   },
   roleDeptRow: {
     flexDirection: "row",
@@ -1126,14 +1167,50 @@ const styles = StyleSheet.create({
     color: "#64748B",
     flex: 1,
   },
+  metaTopRight: {
+    alignItems: "flex-end",
+    gap: 3,
+  },
+  urgencyBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2.5,
+    borderRadius: 5,
+    borderWidth: 0.8,
+  },
+  urgencyDot: {
+    width: 4.5,
+    height: 4.5,
+    borderRadius: 2.5,
+  },
+  urgencyLabel: {
+    fontSize: 9.5,
+    fontWeight: "800",
+  },
+  timeAgoLabel: {
+    fontSize: 9,
+    fontWeight: "500",
+    color: "#94A3B8",
+  },
   locationStrip: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 5,
+    justifyContent: "space-between",
+    gap: 6,
     backgroundColor: "#F8FAFC",
     paddingHorizontal: 8,
     paddingVertical: 5,
     borderRadius: 7,
+    borderWidth: 0.6,
+    borderColor: "#F1F5F9",
+  },
+  locationInfoLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    flex: 1,
   },
   hospitalTitle: {
     fontSize: 11,
@@ -1144,13 +1221,29 @@ const styles = StyleSheet.create({
   distanceBadge: {
     backgroundColor: "#E2E8F0",
     paddingHorizontal: 5,
-    paddingVertical: 1,
+    paddingVertical: 1.5,
     borderRadius: 4,
   },
   distanceText: {
     fontSize: 9,
     fontWeight: "700",
     color: "#475569",
+  },
+  unitsPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    backgroundColor: "#FFF1F2",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 5,
+    borderWidth: 0.6,
+    borderColor: "#FECDD3",
+  },
+  unitsHighlight: {
+    fontSize: 10.5,
+    fontWeight: "800",
+    color: "#BE123C",
   },
   cardActionRow: {
     flexDirection: "row",

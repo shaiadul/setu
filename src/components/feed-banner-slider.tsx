@@ -218,18 +218,8 @@ export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderPr
             style={styles.bottomScrim}
           />
 
-          {/* Top Row: Category Badge & Lightbox / Counter Controls */}
+          {/* Top Row: Lightbox & Counter Controls */}
           <View style={styles.topRow}>
-            <View style={[styles.badgePill, { borderColor: item.badgeColor }]}>
-              <View style={[styles.badgeDot, { backgroundColor: item.badgeColor }]} />
-              <MaterialCommunityIcons
-                name={item.badgeIcon}
-                size={12}
-                color="#FFFFFF"
-              />
-              <Text style={styles.badgeText}>{item.badge}</Text>
-            </View>
-
             <View style={styles.topRightControls}>
               {/* Photo Counter */}
               <View style={styles.counterBadge}>
@@ -239,7 +229,6 @@ export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderPr
                 </Text>
               </View>
 
-              {/* Lightbox / Fullscreen trigger */}
               <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() => setFullscreenVisible(true)}
@@ -252,13 +241,6 @@ export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderPr
 
           {/* Content Body at bottom */}
           <View style={styles.contentBody}>
-            {/* Title & Subtitle */}
-            <Text style={styles.slideTitle} numberOfLines={2}>
-              {item.title}
-            </Text>
-            <Text style={styles.slideSubtitle} numberOfLines={2}>
-              {item.subtitle}
-            </Text>
 
             {/* Location & Time Pin */}
             <View style={styles.locationRow}>
@@ -329,30 +311,21 @@ export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderPr
         bounces={false}
       />
 
-      {/* Interactive Thumbnail Gallery Strip */}
-      <View style={styles.thumbnailStrip}>
-        {slides.map((slide, idx) => {
+      {/* Pagination Dot Indicator */}
+      <View style={styles.paginationTrack}>
+        {slides.map((_, idx) => {
           const isActive = idx === activeIndex;
           return (
             <TouchableOpacity
-              key={slide.id}
-              activeOpacity={0.85}
+              key={idx}
+              activeOpacity={0.8}
               onPress={() => scrollToIndex(idx)}
               style={[
-                styles.thumbnailItem,
-                isActive && styles.thumbnailItemActive,
-              ]}>
-              <Image
-                source={slide.image}
-                style={styles.thumbnailImage}
-                contentFit="cover"
-              />
-              {isActive && (
-                <View style={styles.activeThumbOverlay}>
-                  <View style={styles.activeThumbDot} />
-                </View>
-              )}
-            </TouchableOpacity>
+                styles.dot,
+                isActive ? styles.dotActive : styles.dotInactive,
+              ]}
+              hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}
+            />
           );
         })}
       </View>
@@ -390,22 +363,7 @@ export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderPr
 
           {/* Modal Bottom Caption Card */}
           <View style={styles.modalCaptionCard}>
-            <View style={styles.modalBadgeRow}>
-              <View
-                style={[
-                  styles.badgePill,
-                  { borderColor: currentSlide.badgeColor },
-                ]}>
-                <MaterialCommunityIcons
-                  name={currentSlide.badgeIcon}
-                  size={12}
-                  color="#FFFFFF"
-                />
-                <Text style={styles.badgeText}>{currentSlide.badge}</Text>
-              </View>
-            </View>
-            <Text style={styles.modalTitle}>{currentSlide.title}</Text>
-            <Text style={styles.modalSubtitle}>{currentSlide.subtitle}</Text>
+
             <View style={styles.modalLocationRow}>
               <Ionicons name="location-sharp" size={13} color="#F43F5E" />
               <Text style={styles.modalLocationText}>{currentSlide.location}</Text>
@@ -498,7 +456,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 155,
+    height: 90,
   },
   topRow: {
     position: 'absolute',
@@ -506,30 +464,9 @@ const styles = StyleSheet.create({
     left: 10,
     right: 10,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     alignItems: 'center',
     zIndex: 2,
-  },
-  badgePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    backgroundColor: 'rgba(15, 23, 42, 0.65)',
-    paddingVertical: 3.5,
-    paddingHorizontal: 8,
-    borderRadius: 100,
-    borderWidth: 1,
-  },
-  badgeDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
-  },
-  badgeText: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    letterSpacing: 0.2,
   },
   topRightControls: {
     flexDirection: 'row',
@@ -582,15 +519,6 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.8)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
-  },
-  slideSubtitle: {
-    fontSize: 11,
-    fontWeight: '500',
-    color: '#E2E8F0',
-    lineHeight: 15,
-    textShadowColor: 'rgba(0, 0, 0, 0.6)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
   },
   locationRow: {
     flexDirection: 'row',
@@ -653,51 +581,27 @@ const styles = StyleSheet.create({
       web: { cursor: 'pointer' },
     }),
   },
-  thumbnailStrip: {
+  paginationTrack: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    alignItems: 'center',
     gap: 6,
     marginTop: 8,
-    paddingHorizontal: 2,
   },
-  thumbnailItem: {
-    flex: 1,
-    height: 44,
-    borderRadius: 8,
-    overflow: 'hidden',
-    borderWidth: 1.5,
-    borderColor: '#E2E8F0',
-    position: 'relative',
-    backgroundColor: '#E2E8F0',
+  dot: {
+    height: 4,
+    borderRadius: 2,
     ...Platform.select({
       web: { cursor: 'pointer' },
     }),
   },
-  thumbnailItemActive: {
-    borderColor: '#BE123C',
-    transform: [{ scale: 1.02 }],
-    shadowColor: '#BE123C',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  thumbnailImage: {
-    width: '100%',
-    height: '100%',
-  },
-  activeThumbOverlay: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(190, 18, 60, 0.18)',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    paddingBottom: 2,
-  },
-  activeThumbDot: {
-    width: 14,
-    height: 3,
-    borderRadius: 1.5,
+  dotActive: {
+    width: 20,
     backgroundColor: '#BE123C',
+  },
+  dotInactive: {
+    width: 6,
+    backgroundColor: '#CBD5E1',
   },
 
   /* Lightbox Modal */
@@ -761,12 +665,6 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: '#FFFFFF',
     lineHeight: 22,
-  },
-  modalSubtitle: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#CBD5E1',
-    lineHeight: 17,
   },
   modalLocationRow: {
     flexDirection: 'row',

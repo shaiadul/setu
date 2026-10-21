@@ -6,6 +6,7 @@ import {
   FlatList,
   Linking,
   Platform,
+  Pressable,
   RefreshControl,
   ScrollView,
   Share,
@@ -243,7 +244,6 @@ export default function FeedScreen() {
 
       {/* Modern Blood Group Filter Section */}
       <View style={styles.bloodSectionContainer}>
-        {/* Section Header */}
         <View style={styles.bloodSectionHeader}>
           <View style={styles.bloodHeaderTitleRow}>
             <MaterialCommunityIcons name="water" size={15} color="#BE123C" />
@@ -256,14 +256,16 @@ export default function FeedScreen() {
           </View>
 
           {selectedBlood !== "all" ? (
-            <TouchableOpacity
+            <Pressable
               onPress={() => setSelectedBlood("all")}
-              activeOpacity={0.7}
-              style={styles.clearFilterBtn}
+              style={({ pressed }) => [
+                styles.clearFilterBtn,
+                pressed && styles.clearFilterBtnPressed,
+              ]}
             >
-              <Ionicons name="close-circle-outline" size={12} color="#BE123C" />
+              <Ionicons name="close-circle" size={11} color="#BE123C" />
               <Text style={styles.clearFilterText}>সব দেখুন</Text>
-            </TouchableOpacity>
+            </Pressable>
           ) : (
             <Text style={styles.allCountText}>মোট {requests.length}টি সক্রিয় অনুরোধ</Text>
           )}
@@ -329,7 +331,6 @@ export default function FeedScreen() {
             const isSel = selectedBlood === bg;
             const count = getBloodGroupCount(bg);
             const hasRequests = count > 0;
-            const isRare = bg === "O-" || bg === "B-" || bg === "AB-";
 
             return (
               <TouchableOpacity
@@ -349,7 +350,6 @@ export default function FeedScreen() {
                     end={BrandGradient.end}
                     style={styles.bloodCardGradient}
                   >
-                    {isRare && <View style={[styles.rareDot, styles.rareDotActive]} />}
                     <View style={styles.bloodCardIconWrap}>
                       <MaterialCommunityIcons
                         name="water"
@@ -368,7 +368,6 @@ export default function FeedScreen() {
                   </LinearGradient>
                 ) : (
                   <>
-                    {isRare && <View style={styles.rareDot} />}
                     <View style={styles.bloodCardIconWrap}>
                       <MaterialCommunityIcons
                         name="water"
@@ -867,11 +866,14 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 12,
+    height: 24,
+    minHeight: 24,
   },
   bloodHeaderTitleRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 5,
+    gap: 6,
+    height: 24,
   },
   bloodSectionTitle: {
     fontSize: 12,
@@ -880,28 +882,42 @@ const styles = StyleSheet.create({
   },
   selectedPillBadge: {
     backgroundColor: "#BE123C",
-    paddingHorizontal: 6,
-    paddingVertical: 1,
+    paddingHorizontal: 5,
+    height: 16,
     borderRadius: 4,
+    justifyContent: "center",
+    alignItems: "center",
   },
   selectedPillText: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: "900",
     color: "#FFFFFF",
+    lineHeight: 11,
   },
   clearFilterBtn: {
     flexDirection: "row",
     alignItems: "center",
     gap: 3,
     backgroundColor: "#FFF1F2",
-    paddingHorizontal: 8,
-    paddingVertical: 2.5,
-    borderRadius: 6,
+    paddingHorizontal: 7,
+    height: 20,
+    borderRadius: 100,
     borderWidth: 0.8,
     borderColor: "#FECDD3",
+    justifyContent: "center",
+    ...Platform.select({
+      web: {
+        cursor: "pointer",
+        transition: "all 0.15s ease",
+      },
+    }),
+  },
+  clearFilterBtnPressed: {
+    transform: [{ scale: 0.92 }],
+    opacity: 0.85,
   },
   clearFilterText: {
-    fontSize: 10,
+    fontSize: 9.5,
     fontWeight: "700",
     color: "#BE123C",
   },
@@ -909,6 +925,8 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: "600",
     color: "#64748B",
+    height: 20,
+    lineHeight: 20,
   },
   bloodCardsScrollTrack: {
     flexDirection: "row",
@@ -928,14 +946,23 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingVertical: 6,
     position: "relative",
+    ...Platform.select({
+      web: {
+        cursor: "pointer",
+        transition: "all 0.15s ease",
+      },
+    }),
   },
   bloodCardActiveWrapper: {
-    borderWidth: 0,
+    borderWidth: 1,
+    borderColor: "transparent",
     backgroundColor: "transparent",
+    paddingVertical: 0,
+    overflow: "hidden",
     shadowColor: "#881337",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.35,
-    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
     elevation: 4,
   },
   bloodCardGradient: {
@@ -971,18 +998,6 @@ const styles = StyleSheet.create({
   },
   bloodCardLabelActive: {
     color: "#FFFFFF",
-  },
-  rareDot: {
-    position: "absolute",
-    top: 4,
-    right: 4,
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: "#BE123C",
-  },
-  rareDotActive: {
-    backgroundColor: "#FFFFFF",
   },
   cardBadge: {
     paddingHorizontal: 5,

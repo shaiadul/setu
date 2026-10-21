@@ -41,6 +41,9 @@ export default function RequestScreen() {
   const [urgency, setUrgency] = useState<UrgencyLevel>('Code Red');
   const [caseType, setCaseType] = useState<CaseType>('Trauma / Accident');
   const [selectedHospital, setSelectedHospital] = useState(PRESET_HOSPITALS[0]);
+  const [isOtherHospital, setIsOtherHospital] = useState(false);
+  const [customHospitalName, setCustomHospitalName] = useState('');
+  const [customHospitalArea, setCustomHospitalArea] = useState('');
   const [room, setRoom] = useState('');
   const [deptOrOffice, setDeptOrOffice] = useState(profile.departmentOrOffice);
   const [hallOrOffice, setHallOrOffice] = useState(profile.hallOrResidence);
@@ -55,6 +58,10 @@ export default function RequestScreen() {
       Alert.alert('অসম্পূর্ণ তথ্য', 'অনুগ্রহ করে রোগীর নাম লিখুন।');
       return;
     }
+    if (isOtherHospital && !customHospitalName.trim()) {
+      Alert.alert('অসম্পূর্ণ তথ্য', 'অনুগ্রহ করে হাসপাতালের নাম লিখুন।');
+      return;
+    }
     if (!room.trim()) {
       Alert.alert('অসম্পূর্ণ তথ্য', 'অনুগ্রহ করে ওয়ার্ড বা কেবিন নম্বর লিখুন।');
       return;
@@ -67,12 +74,22 @@ export default function RequestScreen() {
     setIsSubmitting(true);
 
     try {
+      const finalHospital = isOtherHospital
+        ? customHospitalName.trim()
+        : selectedHospital.name;
+      const finalArea = isOtherHospital
+        ? customHospitalArea.trim() || 'অন্যান্য'
+        : selectedHospital.area;
+      const finalDistance = isOtherHospital
+        ? (customHospitalArea.trim() ? customHospitalArea.trim() : 'ঢাকা / অন্যান্য')
+        : (selectedHospital.name.includes('University') ? '০.২ কিমি (ক্যাম্পাস)' : '৩.৫ কিমি (সাভার)');
+
       await createRequest({
         patientName: patientName.trim(),
-        hospital: selectedHospital.name,
-        campusArea: selectedHospital.area,
+        hospital: finalHospital,
+        campusArea: finalArea,
         room: room.trim(),
-        distance: selectedHospital.name.includes('University') ? '০.২ কিমি (ক্যাম্পাস)' : '৩.৫ কিমি (সাভার)',
+        distance: finalDistance,
         requiredUnits: units,
         bloodType,
         urgency,
@@ -319,13 +336,16 @@ export default function RequestScreen() {
 
           <View style={styles.hospitalList}>
             {PRESET_HOSPITALS.map((h, i) => {
-              const isSel = selectedHospital.name === h.name;
+              const isSel = !isOtherHospital && selectedHospital.name === h.name;
               return (
                 <TouchableOpacity
                   key={i}
                   style={[styles.hospitalChoice, isSel && styles.hospitalChoiceActive]}
                   activeOpacity={0.7}
-                  onPress={() => setSelectedHospital(h)}>
+                  onPress={() => {
+                    setIsOtherHospital(false);
+                    setSelectedHospital(h);
+                  }}>
                   <Ionicons
                     name={isSel ? 'radio-button-on' : 'radio-button-off'}
                     size={15}
@@ -338,7 +358,52 @@ export default function RequestScreen() {
                 </TouchableOpacity>
               );
             })}
+
+            {/* Other Hospital Option */}
+            <TouchableOpacity
+              style={[styles.hospitalChoice, isOtherHospital && styles.hospitalChoiceActive]}
+              activeOpacity={0.7}
+              onPress={() => setIsOtherHospital(true)}>
+              <Ionicons
+                name={isOtherHospital ? 'radio-button-on' : 'radio-button-off'}
+                size={15}
+                color={isOtherHospital ? '#BE123C' : '#94A3B8'}
+              />
+              <View style={styles.hospitalTextWrap}>
+                <Text style={styles.hospitalNameText}>অন্যান্য হাসপাতাল (Other Hospital)</Text>
+                <Text style={styles.hospitalAreaText}>কাস্টম হাসপাতালের নাম ও ঠিকানা লিখুন</Text>
+              </View>
+            </TouchableOpacity>
           </View>
+
+          {/* Custom Hospital Input Fields */}
+          {isOtherHospital && (
+            <View style={styles.otherHospitalContainer}>
+              <View style={styles.otherFieldGroup}>
+                <Text style={styles.otherFieldLabel}>
+                  হাসপাতালের নাম <Text style={styles.requiredStar}>*</Text>
+                </Text>
+                <TextInput
+                  style={styles.otherInput}
+                  placeholder="উদা: শহীদ সোহরাওয়ার্দী মেডিকেল কলেজ / স্কয়ার"
+                  placeholderTextColor="#94A3B8"
+                  value={customHospitalName}
+                  onChangeText={setCustomHospitalName}
+                />
+              </View>
+
+              <View style={styles.otherFieldGroup}>
+                <Text style={styles.otherFieldLabel}>হাসপাতালের এলাকা বা শহর (ঐচ্ছিক)</Text>
+                <TextInput
+                  style={styles.otherInput}
+                  placeholder="উদা: শেরেবাংলা নগর, ঢাকা / নবীনগর"
+                  placeholderTextColor="#94A3B8"
+                  value={customHospitalArea}
+                  onChangeText={setCustomHospitalArea}
+                />
+              </View>
+            </View>
+          )}
 
           <View style={styles.fieldGroup}>
             <Text style={styles.fieldLabel}>ওয়ার্ড / কেবিন / রুম নম্বর *</Text>
@@ -663,6 +728,37 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: '500',
     color: '#64748B',
+  },
+  otherHospitalContainer: {
+    marginTop: 8,
+    padding: 10,
+    backgroundColor: '#FFF5F7',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FECDD3',
+    gap: 8,
+  },
+  otherFieldGroup: {
+    gap: 4,
+  },
+  otherFieldLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#881337',
+  },
+  requiredStar: {
+    color: '#BE123C',
+    fontWeight: '900',
+  },
+  otherInput: {
+    height: 38,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#FDA4AF',
+    paddingHorizontal: 10,
+    fontSize: 12,
+    color: '#0F172A',
   },
   submitBtn: {
     flexDirection: 'row',

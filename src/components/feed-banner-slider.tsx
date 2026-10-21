@@ -1,4 +1,8 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Image, ImageSource } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Dimensions,
   FlatList,
@@ -11,11 +15,7 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { Image, ImageSource } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
+} from "react-native";
 
 export interface GallerySlide {
   id: string;
@@ -33,79 +33,89 @@ export interface GallerySlide {
 
 const GALLERY_SLIDES: GallerySlide[] = [
   {
-    id: 'camp',
-    image: require('../../assets/images/gallery/camp.jpg'),
-    badge: 'বার্ষিক রক্তদান ক্যাম্প ২০২৬',
-    badgeIcon: 'calendar-heart',
-    badgeColor: '#E11D48',
-    title: 'জাহাঙ্গীরনগর বিশ্ববিদ্যালয় রক্তদান উৎসব',
-    subtitle: 'বাঁধন ও রেড ক্রিসেন্টের যৌথ ক্যাম্পেইনে অংশ নিয়ে মুমূর্ষু রোগীর পাশে দাঁড়ান।',
-    location: 'টিএসসি ক্যাফেটেরিয়া • সকাল ৯টা - বিকাল ৫টা',
-    ctaText: 'ক্যাম্পেইন দেখুন',
-    ctaIcon: 'arrow-forward',
-    action: () => router.push('/drives'),
+    id: "camp",
+    image: require("../../assets/images/gallery/camp.jpg"),
+    badge: "বার্ষিক রক্তদান ক্যাম্প ২০২৬",
+    badgeIcon: "calendar-heart",
+    badgeColor: "#E11D48",
+    title: "জাহাঙ্গীরনগর বিশ্ববিদ্যালয় রক্তদান উৎসব",
+    subtitle:
+      "বাঁধন ও রেড ক্রিসেন্টের যৌথ ক্যাম্পেইনে অংশ নিয়ে মুমূর্ষু রোগীর পাশে দাঁড়ান।",
+    location: "টিএসসি ক্যাফেটেরিয়া • সকাল ৯টা - বিকাল ৫টা",
+    ctaText: "ক্যাম্পেইন দেখুন",
+    ctaIcon: "arrow-forward",
+    action: () => router.push("/drives"),
   },
   {
-    id: 'emergency',
-    image: require('../../assets/images/gallery/emergency.jpg'),
-    badge: 'জরুরি কোড রেড রেসপন্স',
-    badgeIcon: 'ambulance',
-    badgeColor: '#DC2626',
-    title: 'তাৎক্ষণিক রক্তের অনুরোধ ও ডেলিভারি',
-    subtitle: 'এনাম মেডিকেল ও সাভারের ক্লিনিকে জরুরি রক্তের প্রয়োজনে তাৎক্ষণিক নোটিফিকেশন।',
-    location: 'এনাম মেডিকেল ও ক্যাম্পাস এলাকা • ২৪/৭ সাপোর্ট',
-    ctaText: 'অনুরোধ করুন',
-    ctaIcon: 'flash',
-    action: () => router.push('/request'),
+    id: "emergency",
+    image: require("../../assets/images/gallery/emergency.jpg"),
+    badge: "জরুরি কোড রেড রেসপন্স",
+    badgeIcon: "ambulance",
+    badgeColor: "#DC2626",
+    title: "তাৎক্ষণিক রক্তের অনুরোধ ও ডেলিভারি",
+    subtitle:
+      "এনাম মেডিকেল ও সাভারের ক্লিনিকে জরুরি রক্তের প্রয়োজনে তাৎক্ষণিক নোটিফিকেশন।",
+    location: "এনাম মেডিকেল ও ক্যাম্পাস এলাকা • ২৪/৭ সাপোর্ট",
+    ctaText: "অনুরোধ করুন",
+    ctaIcon: "flash",
+    action: () => router.push("/request"),
   },
   {
-    id: 'volunteers',
-    image: require('../../assets/images/gallery/volunteers.jpg'),
-    badge: 'জাবি স্বেচ্ছাসেবী নেটওয়ার্ক',
-    badgeIcon: 'account-group',
-    badgeColor: '#0284C7',
-    title: '৫০০+ নিবন্ধিত রক্তদাতা শিক্ষার্থী ও শিক্ষক',
-    subtitle: 'সকল ১৬টি হল ও অনুষদের প্রস্তুত রক্তদাতাদের ডিরেক্টরি থেকে সরাসরি যোগাযোগ।',
-    location: 'সকল হল ও বিভাগ • সেতু নেটওয়ার্ক',
-    ctaText: 'ডোনার খুঁজুন',
-    ctaIcon: 'search',
-    action: () => router.push('/drives'),
+    id: "volunteers",
+    image: require("../../assets/images/gallery/volunteers.jpg"),
+    badge: "জাবি স্বেচ্ছাসেবী নেটওয়ার্ক",
+    badgeIcon: "account-group",
+    badgeColor: "#0284C7",
+    title: "৫০০+ নিবন্ধিত রক্তদাতা শিক্ষার্থী ও শিক্ষক",
+    subtitle:
+      "সকল ১৬টি হল ও অনুষদের প্রস্তুত রক্তদাতাদের ডিরেক্টরি থেকে সরাসরি যোগাযোগ।",
+    location: "সকল হল ও বিভাগ • সেতু নেটওয়ার্ক",
+    ctaText: "ডোনার খুঁজুন",
+    ctaIcon: "search",
+    action: () => router.push("/drives"),
   },
   {
-    id: 'donor',
-    image: require('../../assets/images/gallery/donor.jpg'),
-    badge: 'ডোনার অনুপ্রেরণা',
-    badgeIcon: 'heart-pulse',
-    badgeColor: '#16A34A',
-    title: '“আপনার এক ব্যাগ রক্ত, একটি পরিবারের নতুন হাসি”',
-    subtitle: 'নিয়মিত রক্তদানে সুস্থ থাকুন এবং অর্জন করুন ডিজিটাল রক্তদাতা পাসপোর্ট।',
-    location: 'জাবি মেডিকেল সেন্টার • ৯০০+ সফল রক্তদান',
-    ctaText: 'ডোনার প্রোফাইল',
-    ctaIcon: 'card-outline',
-    action: () => router.push('/profile'),
+    id: "donor",
+    image: require("../../assets/images/gallery/donor.jpg"),
+    badge: "ডোনার অনুপ্রেরণা",
+    badgeIcon: "heart-pulse",
+    badgeColor: "#16A34A",
+    title: "“আপনার এক ব্যাগ রক্ত, একটি পরিবারের নতুন হাসি”",
+    subtitle:
+      "নিয়মিত রক্তদানে সুস্থ থাকুন এবং অর্জন করুন ডিজিটাল রক্তদাতা পাসপোর্ট।",
+    location: "জাবি মেডিকেল সেন্টার • ৯০০+ সফল রক্তদান",
+    ctaText: "ডোনার প্রোফাইল",
+    ctaIcon: "card-outline",
+    action: () => router.push("/profile"),
   },
 ];
 
-const BN_NUMERALS = ['১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+const BN_NUMERALS = ["১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
 const toBnNumber = (n: number) => {
   return n
     .toString()
-    .split('')
-    .map(ch => {
+    .split("")
+    .map((ch) => {
       const idx = parseInt(ch, 10);
-      return !isNaN(idx) && idx > 0 ? BN_NUMERALS[idx - 1] : ch === '0' ? '০' : ch;
+      return !isNaN(idx) && idx > 0
+        ? BN_NUMERALS[idx - 1]
+        : ch === "0"
+          ? "০"
+          : ch;
     })
-    .join('');
+    .join("");
 };
 
 interface FeedBannerSliderProps {
   slides?: GallerySlide[];
 }
 
-export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderProps) {
+export function FeedBannerSlider({
+  slides = GALLERY_SLIDES,
+}: FeedBannerSliderProps) {
   const [containerWidth, setContainerWidth] = useState(() => {
-    const screenWidth = Dimensions.get('window').width;
-    return Math.min(Math.max(screenWidth - 28, 300), 860);
+    const screenWidth = Dimensions.get("window").width;
+    return Math.max(screenWidth - 28, 300);
   });
   const [activeIndex, setActiveIndex] = useState(0);
   const [isInteracting, setIsInteracting] = useState(false);
@@ -114,37 +124,14 @@ export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderPr
   const flatListRef = useRef<FlatList>(null);
   const userTouchingRef = useRef(false);
 
-  // Responsive height that scales beautifully on tablets and big screens (keeping 16:9 proportion)
-  const cardHeight = Math.min(Math.max(Math.round(containerWidth * 0.44), 210), 380);
-
   const onLayout = useCallback(
     (e: LayoutChangeEvent) => {
-      const width = Math.round(e.nativeEvent.layout.width);
-      if (width > 0 && Math.abs(width - containerWidth) > 1) {
+      const width = e.nativeEvent.layout.width;
+      if (width > 0 && Math.abs(width - containerWidth) > 2) {
         setContainerWidth(width);
       }
     },
-    [containerWidth]
-  );
-
-  // Sync scroll position whenever container width changes (window resize, screen rotate, tablet mode)
-  useEffect(() => {
-    if (flatListRef.current && containerWidth > 0) {
-      flatListRef.current.scrollToOffset({
-        offset: activeIndex * containerWidth,
-        animated: false,
-      });
-    }
-  }, [containerWidth]);
-
-  // Precise layout geometry so FlatList never drifts on big screens
-  const getItemLayout = useCallback(
-    (_: any, index: number) => ({
-      length: containerWidth,
-      offset: containerWidth * index,
-      index,
-    }),
-    [containerWidth]
+    [containerWidth],
   );
 
   useEffect(() => {
@@ -153,7 +140,7 @@ export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderPr
     const interval = setInterval(() => {
       if (userTouchingRef.current || isInteracting || fullscreenVisible) return;
 
-      setActiveIndex(prevIndex => {
+      setActiveIndex((prevIndex) => {
         const nextIndex = (prevIndex + 1) % slides.length;
         flatListRef.current?.scrollToOffset({
           offset: nextIndex * containerWidth,
@@ -213,7 +200,7 @@ export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderPr
   const renderSlideItem = ({ item }: { item: GallerySlide }) => {
     return (
       <View style={[styles.slideContainer, { width: containerWidth }]}>
-        <View style={[styles.cardWrapper, { height: cardHeight }]}>
+        <View style={styles.cardWrapper}>
           {/* Main Photo Banner */}
           <Image
             source={item.image}
@@ -223,16 +210,16 @@ export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderPr
           />
 
           <LinearGradient
-            colors={['rgba(0,0,0,0.65)', 'rgba(0,0,0,0.1)', 'transparent']}
+            colors={["rgba(0,0,0,0.65)", "rgba(0,0,0,0.1)", "transparent"]}
             style={styles.topScrim}
           />
 
           <LinearGradient
             colors={[
-              'transparent',
-              'rgba(15, 23, 42, 0.45)',
-              'rgba(15, 23, 42, 0.88)',
-              'rgba(15, 23, 42, 0.98)',
+              "transparent",
+              "rgba(15, 23, 42, 0.45)",
+              "rgba(15, 23, 42, 0.88)",
+              "rgba(15, 23, 42, 0.98)",
             ]}
             locations={[0, 0.35, 0.72, 1]}
             style={styles.bottomScrim}
@@ -243,7 +230,8 @@ export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderPr
               activeOpacity={0.8}
               onPress={() => setFullscreenVisible(true)}
               style={styles.fullscreenBtn}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
               <Ionicons name="expand" size={15} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
@@ -265,14 +253,16 @@ export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderPr
                   activeOpacity={0.7}
                   onPress={goToPrevious}
                   style={styles.navArrowBtn}
-                  hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+                  hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                >
                   <Ionicons name="chevron-back" size={14} color="#FFFFFF" />
                 </TouchableOpacity>
                 <TouchableOpacity
                   activeOpacity={0.7}
                   onPress={goToNext}
                   style={styles.navArrowBtn}
-                  hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+                  hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                >
                   <Ionicons name="chevron-forward" size={14} color="#FFFFFF" />
                 </TouchableOpacity>
               </View>
@@ -288,10 +278,10 @@ export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderPr
       <FlatList
         ref={flatListRef}
         data={slides}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item.id}
         renderItem={renderSlideItem}
         horizontal
-        pagingEnabled={Platform.OS !== 'web'}
+        pagingEnabled
         showsHorizontalScrollIndicator={false}
         onScroll={handleScroll}
         scrollEventThrottle={16}
@@ -300,12 +290,7 @@ export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderPr
         decelerationRate="fast"
         snapToInterval={containerWidth}
         snapToAlignment="start"
-        getItemLayout={getItemLayout}
-        initialNumToRender={slides.length}
-        maxToRenderPerBatch={slides.length}
-        windowSize={3}
         bounces={false}
-        style={styles.flatList}
       />
 
       {/* Pagination Dot Indicator */}
@@ -332,7 +317,8 @@ export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderPr
         visible={fullscreenVisible}
         transparent={false}
         animationType="fade"
-        onRequestClose={() => setFullscreenVisible(false)}>
+        onRequestClose={() => setFullscreenVisible(false)}
+      >
         <View style={styles.modalBackdrop}>
           {/* Modal Header */}
           <View style={styles.modalHeader}>
@@ -345,7 +331,8 @@ export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderPr
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => setFullscreenVisible(false)}
-              style={styles.modalCloseBtn}>
+              style={styles.modalCloseBtn}
+            >
               <Ionicons name="close" size={20} color="#0F172A" />
             </TouchableOpacity>
           </View>
@@ -361,13 +348,15 @@ export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderPr
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={goToPrevious}
-              style={[styles.modalNavBtn, styles.modalNavBtnLeft]}>
+              style={[styles.modalNavBtn, styles.modalNavBtnLeft]}
+            >
               <Ionicons name="chevron-back" size={20} color="#0F172A" />
             </TouchableOpacity>
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={goToNext}
-              style={[styles.modalNavBtn, styles.modalNavBtnRight]}>
+              style={[styles.modalNavBtn, styles.modalNavBtnRight]}
+            >
               <Ionicons name="chevron-forward" size={20} color="#0F172A" />
             </TouchableOpacity>
           </View>
@@ -376,7 +365,9 @@ export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderPr
           <View style={styles.modalCaptionCard}>
             <View style={styles.modalLocationRow}>
               <Ionicons name="location-sharp" size={14} color="#BE123C" />
-              <Text style={styles.modalLocationText}>{currentSlide.location}</Text>
+              <Text style={styles.modalLocationText}>
+                {currentSlide.location}
+              </Text>
             </View>
 
             <TouchableOpacity
@@ -385,7 +376,8 @@ export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderPr
                 setFullscreenVisible(false);
                 currentSlide.action();
               }}
-              style={styles.modalCtaBtn}>
+              style={styles.modalCtaBtn}
+            >
               <Text style={styles.modalCtaText}>{currentSlide.ctaText}</Text>
               <Ionicons name={currentSlide.ctaIcon} size={15} color="#FFFFFF" />
             </TouchableOpacity>
@@ -398,117 +390,101 @@ export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderPr
 
 const styles = StyleSheet.create({
   wrapper: {
-    width: '100%',
-    maxWidth: 860,
-    alignSelf: 'center',
+    width: "100%",
     marginBottom: 4,
   },
   galleryHeaderBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 8,
     paddingHorizontal: 2,
   },
   galleryTitleGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
   },
   galleryLiveDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#BE123C',
+    backgroundColor: "#BE123C",
   },
   galleryHeading: {
     fontSize: 12,
-    fontWeight: '800',
-    color: '#0F172A',
+    fontWeight: "800",
+    color: "#0F172A",
     letterSpacing: -0.2,
   },
   galleryTapHint: {
     fontSize: 10,
-    fontWeight: '600',
-    color: '#64748B',
-  },
-  flatList: {
-    width: '100%',
-    borderRadius: 16,
-    ...Platform.select({
-      web: {
-        scrollSnapType: 'x mandatory',
-      },
-    }),
+    fontWeight: "600",
+    color: "#64748B",
   },
   slideContainer: {
     paddingHorizontal: 0,
-    ...Platform.select({
-      web: {
-        scrollSnapAlign: 'start',
-      },
-    }),
   },
   cardWrapper: {
-    width: '100%',
+    height: 220,
     borderRadius: 16,
-    overflow: 'hidden',
-    position: 'relative',
-    backgroundColor: '#0F172A',
-    shadowColor: '#0F172A',
+    overflow: "hidden",
+    position: "relative",
+    backgroundColor: "#0F172A",
+    shadowColor: "#0F172A",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 10,
     elevation: 4,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: "#E2E8F0",
   },
   slideImage: {
-    width: '100%',
-    height: '100%',
-    position: 'absolute',
+    width: "100%",
+    height: "100%",
+    position: "absolute",
     top: 0,
     left: 0,
   },
   topScrim: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     height: 65,
   },
   bottomScrim: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
     height: 90,
   },
   topRow: {
-    position: 'absolute',
+    position: "absolute",
     top: 10,
     left: 10,
     right: 10,
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
     zIndex: 2,
   },
   fullscreenBtn: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: 'rgba(15, 23, 42, 0.65)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(15, 23, 42, 0.65)",
+    justifyContent: "center",
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
+    borderColor: "rgba(255, 255, 255, 0.4)",
     ...Platform.select({
-      web: { cursor: 'pointer' },
+      web: { cursor: "pointer" },
     }),
   },
   contentBody: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 8,
     left: 12,
     right: 12,
@@ -517,45 +493,45 @@ const styles = StyleSheet.create({
   locationRow: {
     flex: 1,
     marginRight: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
   },
   locationText: {
     fontSize: 11,
-    fontWeight: '700',
-    color: '#FEF08A',
-    textShadowColor: 'rgba(0, 0, 0, 0.6)',
+    fontWeight: "700",
+    color: "#FEF08A",
+    textShadowColor: "rgba(0, 0, 0, 0.6)",
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
   actionRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   navigationArrows: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
   },
   navArrowBtn: {
     width: 26,
     height: 26,
     borderRadius: 13,
-    backgroundColor: 'rgba(15, 23, 42, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(15, 23, 42, 0.7)",
+    justifyContent: "center",
+    alignItems: "center",
     borderWidth: 0.8,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderColor: "rgba(255, 255, 255, 0.3)",
     ...Platform.select({
-      web: { cursor: 'pointer' },
+      web: { cursor: "pointer" },
     }),
   },
   paginationTrack: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
     gap: 6,
     marginTop: 8,
   },
@@ -563,102 +539,102 @@ const styles = StyleSheet.create({
     height: 4,
     borderRadius: 2,
     ...Platform.select({
-      web: { cursor: 'pointer' },
+      web: { cursor: "pointer" },
     }),
   },
   dotActive: {
     width: 20,
-    backgroundColor: '#BE123C',
+    backgroundColor: "#BE123C",
   },
   dotInactive: {
     width: 6,
-    backgroundColor: '#CBD5E1',
+    backgroundColor: "#CBD5E1",
   },
 
   /* Lightbox Modal (Light Theme) */
   modalBackdrop: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
-    justifyContent: 'space-between',
+    backgroundColor: "#F8FAFC",
+    justifyContent: "space-between",
     paddingVertical: 36,
     paddingHorizontal: 16,
   },
   modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: Platform.OS === 'android' ? 8 : 0,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingTop: Platform.OS === "android" ? 8 : 0,
   },
   modalCounter: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 5,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     paddingVertical: 5,
     paddingHorizontal: 12,
     borderRadius: 100,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#0F172A',
+    borderColor: "#E2E8F0",
+    shadowColor: "#0F172A",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,
     shadowRadius: 3,
     elevation: 2,
   },
   modalCounterText: {
-    color: '#0F172A',
-    fontWeight: '800',
+    color: "#0F172A",
+    fontWeight: "800",
     fontSize: 12,
   },
   modalCloseBtn: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#0F172A',
+    borderColor: "#E2E8F0",
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#0F172A",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 4,
     elevation: 2,
     ...Platform.select({
-      web: { cursor: 'pointer' },
+      web: { cursor: "pointer" },
     }),
   },
   modalImageContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginVertical: 14,
-    position: 'relative',
+    position: "relative",
   },
   modalImage: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
     borderRadius: 12,
   },
   modalNavBtn: {
-    position: 'absolute',
-    top: '50%',
+    position: "absolute",
+    top: "50%",
     marginTop: -20,
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    justifyContent: "center",
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#0F172A',
+    borderColor: "#E2E8F0",
+    shadowColor: "#0F172A",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.12,
     shadowRadius: 5,
     elevation: 3,
     ...Platform.select({
-      web: { cursor: 'pointer' },
+      web: { cursor: "pointer" },
     }),
   },
   modalNavBtnLeft: {
@@ -668,12 +644,12 @@ const styles = StyleSheet.create({
     right: 8,
   },
   modalCaptionCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     padding: 16,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#0F172A',
+    borderColor: "#E2E8F0",
+    shadowColor: "#0F172A",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -681,31 +657,31 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   modalLocationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
   },
   modalLocationText: {
     fontSize: 12,
-    fontWeight: '700',
-    color: '#334155',
+    fontWeight: "700",
+    color: "#334155",
   },
   modalCtaBtn: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
     gap: 6,
-    backgroundColor: '#BE123C',
+    backgroundColor: "#BE123C",
     paddingVertical: 10,
     borderRadius: 10,
     marginTop: 4,
     ...Platform.select({
-      web: { cursor: 'pointer' },
+      web: { cursor: "pointer" },
     }),
   },
   modalCtaText: {
-    color: '#FFFFFF',
-    fontWeight: '800',
+    color: "#FFFFFF",
+    fontWeight: "800",
     fontSize: 13,
   },
 });

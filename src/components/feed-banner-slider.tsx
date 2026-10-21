@@ -105,7 +105,7 @@ interface FeedBannerSliderProps {
 export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderProps) {
   const [containerWidth, setContainerWidth] = useState(() => {
     const screenWidth = Dimensions.get('window').width;
-    return Math.max(screenWidth - 28, 300);
+    return Math.min(Math.max(screenWidth - 28, 300), 860);
   });
   const [activeIndex, setActiveIndex] = useState(0);
   const [isInteracting, setIsInteracting] = useState(false);
@@ -114,17 +114,39 @@ export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderPr
   const flatListRef = useRef<FlatList>(null);
   const userTouchingRef = useRef(false);
 
+  // Responsive height that scales beautifully on tablets and big screens (keeping 16:9 proportion)
+  const cardHeight = Math.min(Math.max(Math.round(containerWidth * 0.44), 210), 380);
+
   const onLayout = useCallback(
     (e: LayoutChangeEvent) => {
-      const width = e.nativeEvent.layout.width;
-      if (width > 0 && Math.abs(width - containerWidth) > 2) {
+      const width = Math.round(e.nativeEvent.layout.width);
+      if (width > 0 && Math.abs(width - containerWidth) > 1) {
         setContainerWidth(width);
       }
     },
     [containerWidth]
   );
 
-  // Auto-scroll every 5 seconds when idle
+  // Sync scroll position whenever container width changes (window resize, screen rotate, tablet mode)
+  useEffect(() => {
+    if (flatListRef.current && containerWidth > 0) {
+      flatListRef.current.scrollToOffset({
+        offset: activeIndex * containerWidth,
+        animated: false,
+      });
+    }
+  }, [containerWidth]);
+
+  // Precise layout geometry so FlatList never drifts on big screens
+  const getItemLayout = useCallback(
+    (_: any, index: number) => ({
+      length: containerWidth,
+      offset: containerWidth * index,
+      index,
+    }),
+    [containerWidth]
+  );
+
   useEffect(() => {
     if (slides.length <= 1) return;
 
@@ -191,7 +213,7 @@ export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderPr
   const renderSlideItem = ({ item }: { item: GallerySlide }) => {
     return (
       <View style={[styles.slideContainer, { width: containerWidth }]}>
-        <View style={styles.cardWrapper}>
+        <View style={[styles.cardWrapper, { height: cardHeight }]}>
           {/* Main Photo Banner */}
           <Image
             source={item.image}
@@ -200,13 +222,11 @@ export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderPr
             transition={300}
           />
 
-          {/* Top subtle scrim for top icons */}
           <LinearGradient
             colors={['rgba(0,0,0,0.65)', 'rgba(0,0,0,0.1)', 'transparent']}
             style={styles.topScrim}
           />
 
-          {/* Bottom rich dark gradient for text legibility */}
           <LinearGradient
             colors={[
               'transparent',
@@ -218,46 +238,28 @@ export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderPr
             style={styles.bottomScrim}
           />
 
-          {/* Top Row: Lightbox & Counter Controls */}
           <View style={styles.topRow}>
-            <View style={styles.topRightControls}>
-              {/* Photo Counter */}
-              <View style={styles.counterBadge}>
-                <Ionicons name="images-outline" size={11} color="#FFFFFF" />
-                <Text style={styles.counterText}>
-                  {toBnNumber(activeIndex + 1)} / {toBnNumber(slides.length)}
-                </Text>
-              </View>
-
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() => setFullscreenVisible(true)}
-                style={styles.fullscreenBtn}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                <Ionicons name="scan-outline" size={13} color="#FFFFFF" />
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => setFullscreenVisible(true)}
+              style={styles.fullscreenBtn}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Ionicons name="expand" size={15} color="#FFFFFF" />
+            </TouchableOpacity>
           </View>
 
           {/* Content Body at bottom */}
           <View style={styles.contentBody}>
-
-            {/* Location & Time Pin */}
-            <View style={styles.locationRow}>
-              <Ionicons name="location-sharp" size={12} color="#F43F5E" />
-              <Text style={styles.locationText}>{item.location}</Text>
-            </View>
-
-            {/* Bottom Actions Row: CTA & Arrow Navigation */}
             <View style={styles.actionRow}>
-              <TouchableOpacity
-                activeOpacity={0.88}
-                onPress={item.action}
-                style={styles.ctaButton}>
-                <Text style={styles.ctaButtonText}>{item.ctaText}</Text>
-                <Ionicons name={item.ctaIcon} size={13} color="#FFFFFF" />
-              </TouchableOpacity>
+              {/* Location & Time Pin on bottom-left */}
+              <View style={styles.locationRow}>
+                <Ionicons name="location-sharp" size={12} color="#F43F5E" />
+                <Text style={styles.locationText} numberOfLines={1}>
+                  {item.location}
+                </Text>
+              </View>
 
+              {/* Only Navigation Arrows on bottom-right */}
               <View style={styles.navigationArrows}>
                 <TouchableOpacity
                   activeOpacity={0.7}
@@ -283,23 +285,13 @@ export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderPr
 
   return (
     <View style={styles.wrapper} onLayout={onLayout}>
-      {/* Gallery Header Bar */}
-      <View style={styles.galleryHeaderBar}>
-        <View style={styles.galleryTitleGroup}>
-          <View style={styles.galleryLiveDot} />
-          <Text style={styles.galleryHeading}>গ্যালারি ও ফটো স্পটলাইট</Text>
-        </View>
-        <Text style={styles.galleryTapHint}>ছবিতে ট্যাপ করে বড় দেখুন</Text>
-      </View>
-
-      {/* Main Image Slider */}
       <FlatList
         ref={flatListRef}
         data={slides}
         keyExtractor={item => item.id}
         renderItem={renderSlideItem}
         horizontal
-        pagingEnabled
+        pagingEnabled={Platform.OS !== 'web'}
         showsHorizontalScrollIndicator={false}
         onScroll={handleScroll}
         scrollEventThrottle={16}
@@ -308,7 +300,12 @@ export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderPr
         decelerationRate="fast"
         snapToInterval={containerWidth}
         snapToAlignment="start"
+        getItemLayout={getItemLayout}
+        initialNumToRender={slides.length}
+        maxToRenderPerBatch={slides.length}
+        windowSize={3}
         bounces={false}
+        style={styles.flatList}
       />
 
       {/* Pagination Dot Indicator */}
@@ -330,16 +327,17 @@ export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderPr
         })}
       </View>
 
-      {/* Lightbox / Fullscreen Image Viewer Modal */}
+      {/* Lightbox / Fullscreen Image Viewer Modal (Light Theme) */}
       <Modal
         visible={fullscreenVisible}
-        transparent
+        transparent={false}
         animationType="fade"
         onRequestClose={() => setFullscreenVisible(false)}>
         <View style={styles.modalBackdrop}>
           {/* Modal Header */}
           <View style={styles.modalHeader}>
             <View style={styles.modalCounter}>
+              <Ionicons name="images-outline" size={13} color="#64748B" />
               <Text style={styles.modalCounterText}>
                 {toBnNumber(activeIndex + 1)} / {toBnNumber(slides.length)}
               </Text>
@@ -348,24 +346,36 @@ export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderPr
               activeOpacity={0.8}
               onPress={() => setFullscreenVisible(false)}
               style={styles.modalCloseBtn}>
-              <Ionicons name="close" size={20} color="#FFFFFF" />
+              <Ionicons name="close" size={20} color="#0F172A" />
             </TouchableOpacity>
           </View>
 
-          {/* Fullscreen Photo */}
+          {/* Fullscreen Photo with Navigation */}
           <View style={styles.modalImageContainer}>
             <Image
               source={currentSlide.image}
               style={styles.modalImage}
               contentFit="contain"
             />
+            {/* Modal Floating Prev & Next Arrows */}
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={goToPrevious}
+              style={[styles.modalNavBtn, styles.modalNavBtnLeft]}>
+              <Ionicons name="chevron-back" size={20} color="#0F172A" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={goToNext}
+              style={[styles.modalNavBtn, styles.modalNavBtnRight]}>
+              <Ionicons name="chevron-forward" size={20} color="#0F172A" />
+            </TouchableOpacity>
           </View>
 
           {/* Modal Bottom Caption Card */}
           <View style={styles.modalCaptionCard}>
-
             <View style={styles.modalLocationRow}>
-              <Ionicons name="location-sharp" size={13} color="#F43F5E" />
+              <Ionicons name="location-sharp" size={14} color="#BE123C" />
               <Text style={styles.modalLocationText}>{currentSlide.location}</Text>
             </View>
 
@@ -389,6 +399,8 @@ export function FeedBannerSlider({ slides = GALLERY_SLIDES }: FeedBannerSliderPr
 const styles = StyleSheet.create({
   wrapper: {
     width: '100%',
+    maxWidth: 860,
+    alignSelf: 'center',
     marginBottom: 4,
   },
   galleryHeaderBar: {
@@ -420,11 +432,25 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#64748B',
   },
+  flatList: {
+    width: '100%',
+    borderRadius: 16,
+    ...Platform.select({
+      web: {
+        scrollSnapType: 'x mandatory',
+      },
+    }),
+  },
   slideContainer: {
     paddingHorizontal: 0,
+    ...Platform.select({
+      web: {
+        scrollSnapAlign: 'start',
+      },
+    }),
   },
   cardWrapper: {
-    height: 220,
+    width: '100%',
     borderRadius: 16,
     overflow: 'hidden',
     position: 'relative',
@@ -468,100 +494,45 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 2,
   },
-  topRightControls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  counterBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: 'rgba(15, 23, 42, 0.65)',
-    paddingVertical: 3,
-    paddingHorizontal: 8,
-    borderRadius: 100,
-    borderWidth: 0.8,
-    borderColor: 'rgba(255, 255, 255, 0.25)',
-  },
-  counterText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
   fullscreenBtn: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: 'rgba(15, 23, 42, 0.65)',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 0.8,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.4)',
     ...Platform.select({
       web: { cursor: 'pointer' },
     }),
   },
   contentBody: {
     position: 'absolute',
-    bottom: 10,
+    bottom: 8,
     left: 12,
     right: 12,
     zIndex: 2,
-    gap: 4,
-  },
-  slideTitle: {
-    fontSize: 15,
-    fontWeight: '900',
-    color: '#FFFFFF',
-    lineHeight: 20,
-    letterSpacing: -0.2,
-    textShadowColor: 'rgba(0, 0, 0, 0.8)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
   },
   locationRow: {
+    flex: 1,
+    marginRight: 10,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    marginTop: 2,
   },
   locationText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: '#FCD34D',
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#FEF08A',
+    textShadowColor: 'rgba(0, 0, 0, 0.6)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   actionRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 6,
-    paddingTop: 6,
-    borderTopWidth: 0.8,
-    borderTopColor: 'rgba(255, 255, 255, 0.18)',
-  },
-  ctaButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    backgroundColor: '#BE123C',
-    paddingVertical: 5.5,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 3,
-    ...Platform.select({
-      web: { cursor: 'pointer' },
-    }),
-  },
-  ctaButtonText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    letterSpacing: -0.1,
   },
   navigationArrows: {
     flexDirection: 'row',
@@ -604,37 +575,55 @@ const styles = StyleSheet.create({
     backgroundColor: '#CBD5E1',
   },
 
-  /* Lightbox Modal */
+  /* Lightbox Modal (Light Theme) */
   modalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(11, 17, 32, 0.96)',
+    backgroundColor: '#F8FAFC',
     justifyContent: 'space-between',
-    paddingVertical: 40,
+    paddingVertical: 36,
     paddingHorizontal: 16,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingTop: Platform.OS === 'android' ? 8 : 0,
   },
   modalCounter: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    paddingVertical: 4,
-    paddingHorizontal: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 5,
+    paddingHorizontal: 12,
     borderRadius: 100,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 2,
   },
   modalCounterText: {
-    color: '#FFFFFF',
+    color: '#0F172A',
     fontWeight: '800',
     fontSize: 12,
   },
   modalCloseBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
     ...Platform.select({
       web: { cursor: 'pointer' },
     }),
@@ -644,38 +633,62 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginVertical: 14,
+    position: 'relative',
   },
   modalImage: {
     width: '100%',
     height: '100%',
+    borderRadius: 12,
+  },
+  modalNavBtn: {
+    position: 'absolute',
+    top: '50%',
+    marginTop: -20,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 5,
+    elevation: 3,
+    ...Platform.select({
+      web: { cursor: 'pointer' },
+    }),
+  },
+  modalNavBtnLeft: {
+    left: 8,
+  },
+  modalNavBtnRight: {
+    right: 8,
   },
   modalCaptionCard: {
-    backgroundColor: 'rgba(30, 41, 59, 0.95)',
+    backgroundColor: '#FFFFFF',
     padding: 16,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    gap: 6,
-  },
-  modalBadgeRow: {
-    flexDirection: 'row',
-  },
-  modalTitle: {
-    fontSize: 16,
-    fontWeight: '900',
-    color: '#FFFFFF',
-    lineHeight: 22,
+    borderColor: '#E2E8F0',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+    gap: 8,
   },
   modalLocationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    marginTop: 2,
+    gap: 6,
   },
   modalLocationText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '700',
-    color: '#FCD34D',
+    color: '#334155',
   },
   modalCtaBtn: {
     flexDirection: 'row',
@@ -685,7 +698,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#BE123C',
     paddingVertical: 10,
     borderRadius: 10,
-    marginTop: 8,
+    marginTop: 4,
     ...Platform.select({
       web: { cursor: 'pointer' },
     }),

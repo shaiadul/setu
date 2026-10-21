@@ -17,6 +17,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { CampusHeader } from "@/components/campus-header";
+import { FeedBannerSlider } from "@/components/feed-banner-slider";
 import { JuBadge } from "@/components/ju-badge";
 import { RequestTrackingModal } from "@/components/request-tracking-modal";
 import { useBlood } from "@/context/blood-context";
@@ -141,6 +142,9 @@ export default function FeedScreen() {
 
   const renderHeader = () => (
     <View style={styles.headerBlock}>
+      {/* Dynamic Featured Campaign & Awareness Banner Slider */}
+      <FeedBannerSlider />
+
       {/* Inspiring Campus Blood Impact & Weekly Graph Hero Card */}
       <View style={styles.impactCard}>
         {/* Header with Quote & Life Count */}
